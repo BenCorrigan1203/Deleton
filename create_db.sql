@@ -8,7 +8,7 @@ CREATE SCHEMA daily;
 
 SET SEARCH_PATH=daily;
 
-CREATE TABLE IF NOT EXISTS user_address (
+CREATE TABLE IF NOT EXISTS rider_address (
     address_id INT GENERATED ALWAYS AS IDENTITY,
     house_no VARCHAR(20) NOT NULL,
     street_name VARCHAR(20) NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS rider (
     account_creation_date TIMESTAMP NOT NULL,
     PRIMARY KEY (rider_id),
     FOREIGN KEY (address_id)
-    REFERENCES user_address(address_id)
+    REFERENCES rider_address(address_id)
 );
 
 CREATE TABLE IF NOT EXISTS ride (
