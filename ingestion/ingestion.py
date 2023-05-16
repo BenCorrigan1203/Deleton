@@ -152,4 +152,4 @@ if __name__ == "__main__":
 
     consumer = Consumer(kafka_config)
 
-    consume_messages(consumer,os.environ['TOPIC'])
+    consume_messages(consumer, os.environ['TOPIC'])
