@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
-
+import os
 
 DAILY_SCHEMA = "daily"
 HISTORICAL_SCHEMA = "historical"
@@ -76,11 +76,11 @@ def insert_24_hours(config: dict):
     resistance_id = cur.fetchone()[0]
 
     """Inserting average, max, min power in historical schema"""
-    power_query = f"""INSERT INTO {HISTORICAL_SCHEMA}.power (avg_power, max_power, min_power)
+    power_query = f"""INSERT INTO {HISTORICAL_SCHEMA}.power_w (avg_power, max_power, min_power)
                     SELECT
-                        AVG(ride_metadata.power),
-                        MAX(ride_metadata.power),
-                        MIN(ride_metadata.power)
+                        AVG(ride_metadata.power_w),
+                        MAX(ride_metadata.power_w),
+                        MIN(ride_metadata.power_w)
                     FROM {DAILY_SCHEMA}.ride_metadata
                     WHERE DATEDIFF('hour', ride_metadata.recording_taken, now()) <= 24
                     GROUP BY ride_metadata.ride_id
