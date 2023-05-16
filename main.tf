@@ -11,7 +11,7 @@ terraform {
 # Configure AWS provider
 provider "aws" {
   shared_credentials_files = ["~/.aws/credentials"]
-  region                   = var.region
+  region                   = "eu-west-2"
 }
 
 # Use existing VPC
@@ -179,13 +179,6 @@ resource "aws_iam_role_policy_attachment" "function_logging_policy_attachment" {
   policy_arn = aws_iam_policy.function_logging_policy.arn
 }
 
-
-
-
-
-
-
-
 # Create daily generate lambda function
 resource "aws_lambda_function" "c7-deleton-lambda-daily-generate" {
   function_name = "c7-deleton-lambda-daily-generate"
@@ -239,4 +232,83 @@ resource "aws_cloudwatch_log_group" "c7-deleton-daily-generate-function_log_grou
   lifecycle {
     prevent_destroy = false
   }
+}
+# Create role and policy for step function to execute lambdas
+
+resource "aws_iam_role" "step_function_role" {
+  name               = "step_function_role"
+  assume_role_policy = <<-EOF
+  {
+    "Statement": [
+      {
+        "Action": "sts:AssumeRole",
+        "Principal": {
+          "Service": "states.amazonaws.com"
+        },
+        "Effect": "Allow",
+        "Sid": "StepFunctionAssumeRole"
+      }
+    ]
+  }
+  EOF
+}
+
+resource "aws_iam_role_policy" "step_function_policy" {
+  name = "step_function_policy"
+  role = aws_iam_role.step_function_role.id
+
+  policy = <<-EOF
+  {
+    "Statement": [
+      {
+        "Action": [
+          "lambda:InvokeFunction"
+        ],
+        "Effect": "Allow",
+        "Resource": "arn:aws:lambda:eu-west-2:605126261673:function:*"
+      }
+    ]
+  }
+  EOF
+}
+
+
+# Set up step-function
+
+resource "aws_sfn_state_machine" "deleton_state_machine" {
+  name     = "deleton-state-machine"
+  role_arn = aws_iam_role.step_function_role.arn
+
+  definition = <<EOF
+{
+  "Comment": "State machine for the deleton group project",
+  "StartAt": "Compress Data",
+  "States": {
+    "Compress Data": {
+      "Type": "Task",
+      "Resource": "${aws_lambda_function.c7-deleton-lambda-compress.arn}",
+      "Next": "Generate Report"
+    },
+    "Generate Report": {
+      "Type": "Task",
+      "Resource": "${aws_lambda_function.c7-deleton-lambda-daily-generate.arn}",
+      "End": true
+    }
+  }
+}
+
+EOF
+}
+
+
+# Create schedule for step function
+resource "aws_cloudwatch_event_rule" "step_function_schedule" {
+  name                = "deleton-daily-step-function"
+  description         = "Run step function at 6 PM everyday"
+  schedule_expression = "cron(0 18 * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "target" {
+  rule = aws_cloudwatch_event_rule.step_function_schedule.name
+  arn  = aws_sfn_state_machine.deleton_state_machine.arn
 }
