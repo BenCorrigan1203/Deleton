@@ -31,6 +31,10 @@ def add_address_to_database(rider_address: dict) -> int:
         cur.execute(ADDRESS_SQL, [rider_address['house_no'],
                                   rider_address['street_name'],
                                   rider_address['city'],
+                                  rider_address['postcode'],
+                                  rider_address['house_no'],
+                                  rider_address['street_name'],
+                                  rider_address['city'],
                                   rider_address['postcode']])
         address_id = cur.fetchall()[0][0]
         conn.commit()
