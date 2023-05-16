@@ -1,10 +1,30 @@
-
 import os
-from confluent_kafka import Consumer
 import json
-from dotenv import load_dotenv
 
-from ingestion_utils import decode_message, process_rider_info, process_ride_message
+from confluent_kafka import Consumer
+from dotenv import load_dotenv
+import psycopg2
+
+from ingestion_utils import decode_message, process_rider_info, process_ride_message, process_telemetry_message
+
+def get_db_connection():
+    """Connects to the database"""
+    try:
+        conn = psycopg2.connect(user = os.environ["DB_USER"],
+            host = os.environ["DB_HOST"],
+            database = os.environ["DB_NAME"],
+            password = os.environ['DB_PASSWORD'],
+            port = os.environ['DB_PORT']
+        )
+        return conn
+    except Exception as err:
+        print(err)
+        print("Error connecting to database.")
+
+def add_rider_data_to_database(rider_data: dict) -> None:
+    w
+
+
 
 def consume_messages(consumer: Consumer, topic: str) -> None:
     """ A function that constantly polls the topic with a timeout of 1s,
@@ -26,21 +46,18 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
             # print(message_dict)
 
             if '[SYSTEM]' in message_dict:
-                # print('system')
-                data = process_rider_info(message_dict)
-                # print(data)
+                rider_data = process_rider_info(message_dict)
+                print(rider_data)
             elif '[INFO]' in message_dict and "Ride" in message_dict:
                 print(process_ride_message(message_dict))
-                # continue
             elif '[INFO]' in message_dict and 'Telemetry' in message_dict:
-                continue
-                print(message_dict.split('[INFO]: ', 1)[1])
+                print(process_telemetry_message(message_dict))
             else:
                 continue
 
     except Exception as err:
         print(err)
-    finally:
+    finally: 
         consumer.close()
 
 
@@ -54,7 +71,7 @@ if __name__ == "__main__":
         'sasl.username':os.environ['SASL_USERNAME'],
         'sasl.password':os.environ['SASL_PASSWORD'],
         'group.id':os.environ['CONSUMER_GROUP'],
-        'auto.offset.reset': 'earliest'
+        'auto.offset.reset': 'latest'
     }
 
     consumer = Consumer(kafka_config)

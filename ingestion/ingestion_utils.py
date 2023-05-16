@@ -82,6 +82,19 @@ def process_rider_info(decoded_system_message: dict) -> dict:
     return {"rider_info": rider_info, "address_info": address, "start_time": start_time}
 
 
+def create_dict_from_string(message: str) -> dict:
+    """Takes the message strings and converts them into dictionaries for ease of use"""
+    data_dict = {}
+    for match in re.findall(KEY_VALUE_MATCHING, message):
+        key = match[0]
+        if match[1].isdigit():
+            value = int(match[1])
+        else:
+            value = round(float(match[1]), 2)
+        data_dict[key] = value
+    return data_dict
+
+
 def process_ride_message(decoded_ride_message: dict):
     """Processes the message received from the kafka stream is the message is a
     RIDE message, returning the duration, resistance and recording time"""
@@ -89,19 +102,14 @@ def process_ride_message(decoded_ride_message: dict):
     recording_time = relevant_info[0]
     ride_data_string = relevant_info[1]
 
-    ride_data = {}
-    for match in re.findall(KEY_VALUE_MATCHING, ride_data_string):
-        key = match[0]
-        if match[1].isdigit():
-            value = int(match[1])
-        else:
-            value = round(float(match[1]))
-        ride_data[key] = value
+    ride_data = create_dict_from_string(ride_data_string)
 
     ride_data['recording_time'] = recording_time
-    print(ride_data)
     return ride_data
 
 
-
-
+def process_telemetry_message(decoded_ride_message: dict):
+    """Processes the message received from the kafka stream is the message is a
+    TELEMETRY message, returning the heart_rate, rpm and power"""
+    telemetry_data_string = decoded_ride_message.split(TELEMETRY_SPLIT, 1)[1]
+    return create_dict_from_string(telemetry_data_string)
