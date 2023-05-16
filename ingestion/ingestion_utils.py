@@ -72,6 +72,7 @@ def process_rider_info(decoded_system_message: dict) -> dict:
         'user_id': personal_info['user_id'],
         'first_name': split_name['first_name'],
         'last_name': split_name['last_name'],
+        'gender': personal_info['gender'],
         'date_of_birth': epoch_to_timestamp(personal_info['date_of_birth']),
         'email': personal_info['email_address'],
         'height_cm': personal_info['height_cm'],
@@ -79,7 +80,13 @@ def process_rider_info(decoded_system_message: dict) -> dict:
         'account_creation_date': epoch_to_timestamp(personal_info['account_create_date'])
     }
 
-    return {"rider_info": rider_info, "address_info": address, "start_time": start_time}
+    ride_info = {
+        'bike_serial': personal_info['bike_serial'],
+        'user_id': personal_info['user_id'],
+        'start_time': start_time
+    }
+
+    return {"rider_info": rider_info, "address_info": address, "ride_info": ride_info}
 
 
 def create_dict_from_string(message: str) -> dict:
