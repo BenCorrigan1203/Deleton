@@ -1,4 +1,0 @@
-sqlalchemy
-s3fs
-python-dotenv
-pandas

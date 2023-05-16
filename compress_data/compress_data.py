@@ -1,21 +1,13 @@
 from dotenv import load_dotenv
-from s3fs import S3FileSystem
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from sqlalchemy import create_engine, engine
-import pandas as pd
 
 
 DAILY_SCHEMA = "daily"
 HISTORICAL_SCHEMA = "historical"
-USER_TABLE = ""
-ADDRESS_TABLE = ""
-RIDE_TABLE = ""
-RIDEMETA_TABLE = ""
 
-def get_db_connection(daily: bool, config: dict=os.environ):
+def get_db_connection(config: dict=os.environ):
     """establishes connection to database"""
-    schema = DAILY_SCHEMA if daily else HISTORICAL_SCHEMA
     try:
         connection = psycopg2.connect(user = config["DATABASE_USERNAME"], \
                                       password = config["DATABASE_PASSWORD"],\
@@ -27,31 +19,35 @@ def get_db_connection(daily: bool, config: dict=os.environ):
         print("Error connecting to database.")
         print(err)
 
-def insert_24_hours(config: dict) -> pd.DataFrame:
+def insert_24_hours(config: dict):
     "connect and extract 24 hour data from schema and insert to historical schema"
-    conn = get_db_connection(daily=True)
+    conn = get_db_connection(config)
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    user_query = f""" INSERT INTO {HISTORICAL_SCHEMA}.user
-                      SELECT * FROM {DAILY_SCHEMA}.user
-                      WHERE user_id IN(
-                      SELECT user_id FROM {DAILY_SCHEMA}.ride
+
+    """Copying across rider table to historical schema"""
+    rider_query = f""" INSERT INTO {HISTORICAL_SCHEMA}.rider
+                      SELECT * FROM {DAILY_SCHEMA}.rider
+                      WHERE rider_id IN(
+                      SELECT rider_id FROM {DAILY_SCHEMA}.ride
                       JOIN {DAILY_SCHEMA}.ride_metadata ON ride.ride_id = ride_metadata.ride_id
                         WHERE DATEDIFF('hour', ride_metadata.recording_taken, now()) <= 24
                       );"""
-    cur.execute(user_query)
+    cur.execute(rider_query)
 
-    user_address_query = f"""INSERT INTO {HISTORICAL_SCHEMA}.user_address
-                             SELECT * FROM {DAILY_SCHEMA}.user_address
+    """Copying across rider_address to historical schema"""
+    rider_address_query = f"""INSERT INTO {HISTORICAL_SCHEMA}.rider_address
+                             SELECT * FROM {DAILY_SCHEMA}.rider_address
                              WHERE address_id IN(
-                             SELECT address_id FROM {DAILY_SCHEMA}.user
-                                WHERE user_id IN(
-                                SELECT user_id FROM {DAILY_SCHEMA}.ride
+                             SELECT address_id FROM {DAILY_SCHEMA}.rider
+                                WHERE rider_id IN(
+                                SELECT rider_id FROM {DAILY_SCHEMA}.ride
                                 JOIN {DAILY_SCHEMA}.ride_metadata ON ride.ride_id = ride_metadata.ride_id
                                     WHERE DATEDIFF('hour', ride_metadata.recording_taken, now()) <= 24
                                     )
                             );"""
-    cur.execute(user_address_query)
+    cur.execute(rider_address_query)
 
+    """Inserting average, max, min RPM in historical schema"""
     rpm_query = f"""INSERT INTO {HISTORICAL_SCHEMA}.rpm (avg_rpm, max_rpm, min_rpm)
                     SELECT
                         AVG(ride_metadata.rpm),
@@ -66,6 +62,7 @@ def insert_24_hours(config: dict) -> pd.DataFrame:
     rpm_id = rpm_row['rpm_id']
     ride_id = rpm_row['ride_id']
 
+    """Inserting average, max, min resistance in historical schema"""
     resistance_query = f"""INSERT INTO {HISTORICAL_SCHEMA}.resistance (avg_resistance, max_resistance, min_resistance)
                     SELECT
                         AVG(ride_metadata.resistance),
@@ -78,6 +75,7 @@ def insert_24_hours(config: dict) -> pd.DataFrame:
     cur.execute(resistance_query)
     resistance_id = cur.fetchone()[0]
 
+    """Inserting average, max, min power in historical schema"""
     power_query = f"""INSERT INTO {HISTORICAL_SCHEMA}.power (avg_power, max_power, min_power)
                     SELECT
                         AVG(ride_metadata.power),
@@ -90,6 +88,7 @@ def insert_24_hours(config: dict) -> pd.DataFrame:
     cur.execute(power_query)
     power_id = cur.fetchone()[0]
 
+    """Inserting average, max, min heart rate in historical schema"""
     heart_query = f"""INSERT INTO {HISTORICAL_SCHEMA}.heart_rate (avg_heart_rate, max_heart_rate, min_heart_rate)
                     SELECT
                         AVG(ride_metadata.heart_rate),
@@ -102,6 +101,7 @@ def insert_24_hours(config: dict) -> pd.DataFrame:
     cur.execute(heart_query)
     heart_id = cur.fetchone()[0]
 
+    """extracting ride info for ride_info"""
     ride_data_query = f"""SELECT start_time, end_time, rider_id, bike_serial FROM ride WHERE ride_id = %s"""
     cur.execute(ride_data_query, (ride_id,))
     ride_data = cur.fetchall()
@@ -110,6 +110,7 @@ def insert_24_hours(config: dict) -> pd.DataFrame:
     rider_id = ride_data["rider_id"]
     bike_serial = ride_data["bike_serial"]
     
+    """Inserting ride_info from returned variables"""
     ride_info_query = f"""INSERT INTO {HISTORICAL_SCHEMA}.ride_info 
                           (start_time, end_time, rider_id, bike_serial, heart_rate_id, resistance_id, power_id, rpm_id)
                           VALUES (%s,%s,%s,%s,%s,%s,%s,%s);"""
@@ -118,9 +119,9 @@ def insert_24_hours(config: dict) -> pd.DataFrame:
     conn.close()
 
 
-def delete_12_hours(config: dict) -> pd.DataFrame:
+def delete_12_hours(config: dict):
     "connect and extract 24 hour data from schema, RDS"
-    conn = get_db_connection(daily=True)
+    conn = get_db_connection(config)
     cur = conn.cursor(cursor_factory=RealDictCursor)
     query = """DELETE FROM ride_metadata
                 WHERE DATEDIFF(hour, ride_metadata.recording_taken, now()) > 12"""
@@ -129,11 +130,7 @@ def delete_12_hours(config: dict) -> pd.DataFrame:
     cur.close()
     conn.close()
 
-def merge_all_df(user_day_df: pd.DataFrame, address_day_df: pd.DataFrame, ride_day_df: pd.DataFrame, ridemeta_day_df: pd.DataFrame) -> pd.DataFrame:
-   merged_df = pd.merge(user_day_df, address_day_df, on=address)
-
 if __name__ == "__main__": 
     config = load_dotenv()
-    data_24 = get_24_hours(config)
+    insert_24_hours(config)
     delete_12_hours(config)
-    merged_df = merge_all_df(user_day_df, address_day_df, ride_day_df, ridemeta_day_df)
