@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS rider_address (
     street_name VARCHAR(20) NOT NULL,
     city VARCHAR(20) NOT NULL,
     postcode VARCHAR(10) NOT NULL,
-    PRIMARY KEY (address_id)
+    PRIMARY KEY (address_id),
+    UNIQUE (house_no, street_name, city, postcode)
 );
 
 CREATE TABLE IF NOT EXISTS rider (
@@ -23,11 +24,11 @@ CREATE TABLE IF NOT EXISTS rider (
     last_name VARCHAR(20) NOT NULL,
     gender VARCHAR(10) NOT NULL,
     address_id INT NOT NULL,
-    date_of_birth TIMESTAMP NOT NULL,
+    date_of_birth DATE NOT NULL,
     email VARCHAR(50) NOT NULL,
     height_cm INT NOT NULL,
     weight_kg INT NOT NULL,
-    account_creation_date TIMESTAMP NOT NULL,
+    account_creation_date DATE NOT NULL,
     PRIMARY KEY (rider_id),
     FOREIGN KEY (address_id)
     REFERENCES rider_address(address_id)
@@ -77,7 +78,7 @@ first_name VARCHAR(50) NOT NULL,
 last_name VARCHAR(50) NOT NULL,
 gender VARCHAR(10) NOT NULL,
 address_id INT NOT NULL,
-dob DATE NOT NULL,
+date_of_birth DATE NOT NULL,
 email VARCHAR(150) NOT NULL,
 height_cm INT NOT NULL,
 weight_kg INT NOT NULL,
