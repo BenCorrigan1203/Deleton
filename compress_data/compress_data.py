@@ -13,7 +13,7 @@ def get_db_connection(config: dict=os.environ):
                                       password = config["DATABASE_PASSWORD"],\
                                       host = config["DATABASE_IP"], \
                                       port = config["DATABASE_PORT"], \
-                                      database = "") 
+                                      database = config["DATABASE_PORT"]) 
         return connection
     except Exception as err:
         print("Error connecting to database.")
