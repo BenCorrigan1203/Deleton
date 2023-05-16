@@ -1,10 +1,19 @@
 """file for storing sql commands as variable"""
 
-ADDRESS_SQL = """INSERT INTO rider_address 
-(house_no, street_name, city, postcode) 
-VALUES (%s, %s, %s, %s)
-ON CONFLICT DO NOTHING
-RETURNING address_id;"""
+ADDRESS_SQL = """WITH ins AS (
+  INSERT INTO rider_address 
+  (house_no, street_name, city, postcode) 
+  VALUES (%s, %s, %s, %s)
+  ON CONFLICT DO NOTHING
+  RETURNING address_id
+)
+SELECT address_id FROM ins
+UNION ALL
+SELECT address_id FROM rider_address
+WHERE house_no = %s
+  AND street_name = %s
+  AND city = %s
+  AND postcode = %s;"""
 
 RIDER_SQL = """INSERT INTO rider
 (rider_id, first_name, last_name, gender, address_id, date_of_birth, email,
