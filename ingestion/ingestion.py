@@ -4,7 +4,7 @@ from confluent_kafka import Consumer
 import json
 from dotenv import load_dotenv
 
-from ingestion_utils import decode_message, process_rider_info
+from ingestion_utils import decode_message, process_rider_info, process_ride_message
 
 def consume_messages(consumer: Consumer, topic: str) -> None:
     """ A function that constantly polls the topic with a timeout of 1s,
@@ -26,11 +26,12 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
             # print(message_dict)
 
             if '[SYSTEM]' in message_dict:
-                process_rider_info(message_dict)
-                print('\n')
+                # print('system')
+                data = process_rider_info(message_dict)
+                # print(data)
             elif '[INFO]' in message_dict and "Ride" in message_dict:
-                continue
-                print(message_dict.split('[INFO]: ', 1)[1])
+                print(process_ride_message(message_dict))
+                # continue
             elif '[INFO]' in message_dict and 'Telemetry' in message_dict:
                 continue
                 print(message_dict.split('[INFO]: ', 1)[1])
