@@ -5,6 +5,7 @@ from confluent_kafka import Consumer
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import execute_values
+import boto3
 
 from ingestion_utils import decode_message, process_rider_info, process_ride_message, process_telemetry_message
 from ingestion_sql import ADDRESS_SQL, RIDER_SQL, RIDE_SQL, METADATA_SQL, END_RIDE_SQL
@@ -38,7 +39,6 @@ def add_address_to_database(rider_address: dict) -> int:
                                   rider_address['postcode']])
         address_id = cur.fetchall()[0][0]
         conn.commit()
-    print(address_id)
     return address_id
 
 
@@ -97,6 +97,7 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
 
     ride_id = -1
     rider_max_heart_rate = -1
+    alert_sent = False
     last_log = ""
     last_log_info = {}
 
@@ -114,12 +115,10 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
             if '[SYSTEM]' in message_dict:
                 rider_data = process_rider_info(message_dict)
                 rider_max_heart_rate = 220 - rider_data['rider_age']
-                print(rider_data)
-                print("adding rider address")
+                alert_sent = False
+
                 address_id = add_address_to_database(rider_data['address_info'])
-                print("adding rider data")
                 add_rider_data_to_database(rider_data['rider_info'], address_id)
-                print("adding ride data")
                 ride_id = add_ride_data_to_database(rider_data['ride_info'])
 
             elif '[INFO]' in message_dict and "Ride" in message_dict:
@@ -127,7 +126,6 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                     continue
 
                 ride_info = process_ride_message(message_dict)
-                # print(ride_info)
                 last_log = 'ride'
                 last_log_info = ride_info
 
@@ -137,9 +135,17 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
 
                 telemetry_info = process_telemetry_message(message_dict)
 
+                if telemetry_info['hrt'] > rider_max_heart_rate - 10 and alert_sent == False:
+                    print("sending message")
+                    message = {"Subject": {"Data": "Heart Rate Alert"},
+                                "Body": {"Text": {"Data": f"This is an automated alert from your Deleton tracker. At your current \
+age, the maximum safe heart rate is {rider_max_heart_rate} bpm. You have reached \
+{telemetry_info['hrt']}. Please exercise with caution and remain safe."}}}
+                    ses.send_email(Source="trainee.mohammed.simjee@sigmalabs.co.uk", Destination=email_recipients, Message=message)
+                    alert_sent = True
+                    print("message sent")
 
 
-                # print(telemetry_info)
                 if last_log == 'ride':
                     logs_to_input.append([
                         telemetry_info['hrt'],
@@ -159,9 +165,7 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                 continue
 
             if len(logs_to_input) > 9:
-                print("adding metadata")
                 add_metadata_to_database(logs_to_input)
-                print("done with metadata")
                 logs_to_input = []
 
     except Exception as err:
@@ -181,8 +185,12 @@ if __name__ == "__main__":
         'sasl.username':os.environ['SASL_USERNAME'],
         'sasl.password':os.environ['SASL_PASSWORD'],
         'group.id':os.environ['CONSUMER_GROUP'],
-        'auto.offset.reset': 'earliest'
+        'auto.offset.reset': 'latest'
     }
+
+    session = boto3.Session(aws_access_key_id=os.environ["ACCESS_KEY"], aws_secret_access_key=os.environ["SECRET_KEY"])
+    ses = session.client("ses")
+    email_recipients = {"ToAddresses": ["trainee.ben.corrigan@sigmalabs.co.uk"], "CcAddresses": [], "BccAddresses": []}
 
     consumer = Consumer(kafka_config)
 
