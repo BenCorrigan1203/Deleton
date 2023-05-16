@@ -7,7 +7,7 @@ import psycopg2
 from psycopg2.extras import execute_values
 
 from ingestion_utils import decode_message, process_rider_info, process_ride_message, process_telemetry_message
-from ingestion_sql import ADDRESS_SQL, RIDER_SQL, RIDE_SQL, METADATA_SQL
+from ingestion_sql import ADDRESS_SQL, RIDER_SQL, RIDE_SQL, METADATA_SQL, END_RIDE_SQL
 
 def get_db_connection():
     """Connects to the database"""
@@ -79,6 +79,13 @@ def add_metadata_to_database(metadata: list[list]) -> None:
         conn.commit()
 
 
+def add_ride_end_time_to_db(end_time: str, ride_id: int) -> None:
+    """After the ride is over (which we can only really see occurs when a new ride starts)
+    We update the database ride row with the end time"""
+    with conn.cursor() as cur:
+        cur.execute(END_RIDE_SQL, [end_time, ride_id])
+        conn.commit()
+
 
 def consume_messages(consumer: Consumer, topic: str) -> None:
     """ A function that constantly polls the topic with a timeout of 1s,
@@ -89,6 +96,7 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
     running = True
 
     ride_id = -1
+    rider_max_heart_rate = -1
     last_log = ""
     last_log_info = {}
 
@@ -105,6 +113,7 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
 
             if '[SYSTEM]' in message_dict:
                 rider_data = process_rider_info(message_dict)
+                rider_max_heart_rate = 220 - rider_data['rider_age']
                 print(rider_data)
                 print("adding rider address")
                 address_id = add_address_to_database(rider_data['address_info'])
@@ -118,7 +127,7 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                     continue
 
                 ride_info = process_ride_message(message_dict)
-                print(ride_info)
+                # print(ride_info)
                 last_log = 'ride'
                 last_log_info = ride_info
 
@@ -127,7 +136,10 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                     continue
 
                 telemetry_info = process_telemetry_message(message_dict)
-                print(telemetry_info)
+
+
+
+                # print(telemetry_info)
                 if last_log == 'ride':
                     logs_to_input.append([
                         telemetry_info['hrt'],
@@ -138,9 +150,11 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                         last_log_info['recording_time'],
                         ride_id
                     ])
-                else:
-                    last_log = 'telemetry'
-                    last_log_info = telemetry_info
+            elif "beginning of main" in message_dict and ride_id != -1:
+                try:
+                    add_ride_end_time_to_db(last_log_info['recording_time'], ride_id)
+                except:
+                    print("Could not add end_time to the ride database.")
             else:
                 continue
 
@@ -167,7 +181,7 @@ if __name__ == "__main__":
         'sasl.username':os.environ['SASL_USERNAME'],
         'sasl.password':os.environ['SASL_PASSWORD'],
         'group.id':os.environ['CONSUMER_GROUP'],
-        'auto.offset.reset': 'latest'
+        'auto.offset.reset': 'earliest'
     }
 
     consumer = Consumer(kafka_config)
