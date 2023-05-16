@@ -1,6 +1,6 @@
 provider "aws" {
-    shared_credentials_files = ["~/.aws/credentials"]
-    region = "${var.region}"
+  shared_credentials_files = ["~/.aws/credentials"]
+  region                   = var.region
 }
 
 # Sets up a free-tier postgres RDS w/ password
@@ -10,7 +10,7 @@ resource "aws_db_instance" "deleton-rds" {
   allocated_storage      = 5
   engine                 = "postgres"
   username               = "postgres"
-  password               = "${var.db_password}"
+  password               = var.db_password
   publicly_accessible    = true
   skip_final_snapshot    = true
   db_subnet_group_name   = "c7-public-db-subnet-group"
