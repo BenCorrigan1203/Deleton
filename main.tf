@@ -133,7 +133,7 @@ resource "aws_lambda_function" "c7-deleton-lambda-compress" {
 # Create compress schedule for lambda function 
 resource "aws_cloudwatch_event_rule" "c7-schedule-lambda-compress" {
   name                = "c7-schedule-lambda-compress"
-  schedule_expression = "rate(1 minute)"
+  schedule_expression = "rate(1 day)"
 
 }
 # Create compress schedule target for lambda function 
