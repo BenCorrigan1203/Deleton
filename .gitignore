@@ -163,3 +163,5 @@ terraform*
 terraform.tfvars
 
 .terraform*
+.DS_Store
+__pycache__
