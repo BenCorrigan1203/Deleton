@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS ride (
     bike_serial VARCHAR(10) NOT NULL,
     rider_id INT NOT NULL,
     start_time TIMESTAMP NOT NULL,
-    end_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP,
     PRIMARY KEY (ride_id),
     FOREIGN KEY (rider_id)
     REFERENCES rider(rider_id)
