@@ -69,7 +69,7 @@ def process_rider_info(decoded_system_message: dict) -> dict:
     split_name = process_rider_name(personal_info['name'])
 
     rider_info = {
-        'user_id': personal_info['user_id'],
+        'rider_id': personal_info['user_id'],
         'first_name': split_name['first_name'],
         'last_name': split_name['last_name'],
         'gender': personal_info['gender'],
@@ -82,7 +82,7 @@ def process_rider_info(decoded_system_message: dict) -> dict:
 
     ride_info = {
         'bike_serial': personal_info['bike_serial'],
-        'user_id': personal_info['user_id'],
+        'rider_id': personal_info['user_id'],
         'start_time': start_time
     }
 

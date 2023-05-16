@@ -17,7 +17,7 @@ def get_db_connection():
             database = os.environ["DB_NAME"],
             password = os.environ['DB_PASSWORD'],
             port = os.environ['DB_PORT'],
-            options=f"-c search_path={os.environ['schema']}"
+            options=f"-c search_path={os.environ['SCHEMA']}"
         )
         return conn
     except Exception as err:
@@ -32,8 +32,9 @@ def add_address_to_database(rider_address: dict) -> int:
                                   rider_address['street_name'],
                                   rider_address['city'],
                                   rider_address['postcode']])
-        address_id = cur.fetchall()[0]
+        address_id = cur.fetchall()[0][0]
         conn.commit()
+    print(address_id)
     return address_id
 
 
@@ -61,7 +62,7 @@ def add_ride_data_to_database(ride_data: dict) -> int:
         cur.execute(RIDE_SQL, [ride_data['bike_serial'],
                                ride_data['rider_id'],
                                ride_data['start_time']])
-        ride_id = cur.fetchall()[0]
+        ride_id = cur.fetchall()[0][0]
         conn.commit()
     return ride_id
 
@@ -83,7 +84,7 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
     consumer.subscribe([topic])
     running = True
 
-    ride_id = 0
+    ride_id = -1
     last_log = ""
     last_log_info = {}
 
@@ -100,16 +101,29 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
 
             if '[SYSTEM]' in message_dict:
                 rider_data = process_rider_info(message_dict)
+                print(rider_data)
+                print("adding rider address")
                 address_id = add_address_to_database(rider_data['address_info'])
-                add_rider_data_to_database(rider_data['rider_info'])
+                print("adding rider data")
+                add_rider_data_to_database(rider_data['rider_info'], address_id)
+                print("adding ride data")
                 ride_id = add_ride_data_to_database(rider_data['ride_info'])
 
             elif '[INFO]' in message_dict and "Ride" in message_dict:
+                if ride_id == -1:
+                    continue
+
                 ride_info = process_ride_message(message_dict)
+                print(ride_info)
                 last_log = 'ride'
                 last_log_info = ride_info
+
             elif '[INFO]' in message_dict and 'Telemetry' in message_dict:
+                if ride_id == -1:
+                    continue
+
                 telemetry_info = process_telemetry_message(message_dict)
+                print(telemetry_info)
                 if last_log == 'ride':
                     logs_to_input.append([
                         telemetry_info['hrt'],
@@ -117,7 +131,7 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                         telemetry_info['power'],
                         last_log_info['duration'],
                         last_log_info['resistance'],
-                        last_log_info['recording_taken'],
+                        last_log_info['recording_time'],
                         ride_id
                     ])
                 else:
@@ -127,7 +141,9 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                 continue
 
             if len(logs_to_input) > 9:
+                print("adding metadata")
                 add_metadata_to_database(logs_to_input)
+                print("done with metadata")
                 logs_to_input = []
 
     except Exception as err:
