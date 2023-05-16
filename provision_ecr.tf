@@ -3,6 +3,8 @@ provider "aws" {
     region = "${var.region}"
 }
 
+# Sets up multiple AWS ECR repositories w/ option to delete even if there is an image in them.
+
 resource "aws_ecr_repository" "deleton-ingestion-ecr" {
   name = "deleton-ingestion-ecr"
   image_tag_mutability = "MUTABLE"
