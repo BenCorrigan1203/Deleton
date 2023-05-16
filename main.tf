@@ -7,24 +7,13 @@ terraform {
   }
   required_version = ">= 1.2.0"
 }
-variable "access_key" {
-  type = string
-}
-variable "secret_key" {
-  type = string
-}
-variable "username" {
-  type = string
-}
-variable "password" {
-  type = string
-}
+
 # Configure AWS provider
 provider "aws" {
-  access_key = var.access_key
-  secret_key = var.secret_key
-  region     = "eu-west-2"
+  shared_credentials_files = ["~/.aws/credentials"]
+  region                   = var.region
 }
+
 # Use existing VPC
 data "aws_vpc" "c7-vpc" {
   id = "vpc-010fd888c94cf5102"
@@ -69,12 +58,19 @@ resource "aws_db_instance" "deleton-rds" {
   allocated_storage      = 5
   engine                 = "postgres"
   username               = "postgres"
-  password               = var.password
+  password               = var.db_password
   publicly_accessible    = true
   skip_final_snapshot    = true
   db_subnet_group_name   = "c7-public-db-subnet-group"
   vpc_security_group_ids = ["sg-01745c9fa38b8ed68"]
+  provisioner "local-exec" {
 
+    command = "psql -h ${aws_db_instance.deleton-rds.address} -p 5432 -U \"postgres\" -d \"postgres\" -f \"create_db.sql\""
+
+    environment = {
+      PGPASSWORD = "${var.db_password}"
+    }
+  }
 }
 
 # Creata lambda IAM policy
@@ -120,8 +116,8 @@ resource "aws_lambda_function" "c7-deleton-lambda-compress" {
 
   environment {
     variables = {
-      DB_USER     = var.username
-      DB_PASSWORD = var.password
+      DB_USER     = "${var.username}"
+      DB_PASSWORD = "${var.db_password}"
       DB_HOST     = aws_db_instance.deleton-rds.address
       DB_PORT     = aws_db_instance.deleton-rds.port
 
@@ -202,11 +198,11 @@ resource "aws_lambda_function" "c7-deleton-lambda-daily-generate" {
 
   environment {
     variables = {
-      ACCESS_KEY  = var.access_key
-      SECRET_KEY  = var.secret_key
-      DB_USER     = var.username
-      DB_NAME     = var.username
-      DB_PASSWORD = var.password
+      ACCESS_KEY  = "${var.access_key}"
+      SECRET_KEY  = "${var.secret_key}"
+      DB_USER     = "${var.username}"
+      DB_NAME     = "${var.username}"
+      DB_PASSWORD = "${var.db_password}"
       DB_HOST     = aws_db_instance.deleton-rds.address
       DB_PORT     = aws_db_instance.deleton-rds.port
     }
