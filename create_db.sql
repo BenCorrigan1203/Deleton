@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS rider_address (
 );
 
 CREATE TABLE IF NOT EXISTS rider (
-    rider_id INT GENERATED ALWAYS AS IDENTITY,
+    rider_id INT NOT NULL,
     first_name VARCHAR(20) NOT NULL,
     last_name VARCHAR(20) NOT NULL,
     address_id INT NOT NULL,
@@ -62,7 +62,7 @@ CREATE SCHEMA historical;
 SET SEARCH_PATH=historical;
 
 CREATE TABLE IF NOT EXISTS rider_address 
-(address_id INT GENERATED ALWAYS AS IDENTITY,
+(address_id INT NOT NULL,
 house_num VARCHAR(5),
 street VARCHAR(50) NOT NULL,
 city VARCHAR(25) NOT NULL,
@@ -71,7 +71,7 @@ PRIMARY KEY (address_id));
 
 
 CREATE TABLE IF NOT EXISTS rider
-(rider_id INT GENERATED ALWAYS AS IDENTITY,
+(rider_id INT NOT NULL,
 first_name VARCHAR(50) NOT NULL,
 last_name VARCHAR(50) NOT NULL,
 address_id INT NOT NULL,
