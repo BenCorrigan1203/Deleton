@@ -1,0 +1,6 @@
+pandas
+plotly
+sqlalchemy
+numpy
+python-dotenv
+typing
