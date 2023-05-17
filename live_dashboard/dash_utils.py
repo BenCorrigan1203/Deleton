@@ -6,10 +6,11 @@ import pandas as pd
 import psycopg2
 from sqlalchemy import URL, create_engine
 from dotenv import load_dotenv
+import plotly.express as px
 
 import pandas as pd
 
-from sql_vars import CURRENT_RIDER_SQL
+from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL
 
 def get_db_connection():
     """Connects to the database"""
@@ -31,19 +32,19 @@ load_dotenv()
 
 conn = get_db_connection()
 
-ride_df = pd.read_sql_table("ride", conn)
+ride_rider_info = pd.read_sql_table("ride", conn)
 
-rider_df = pd.read_sql_table("rider", conn)
+rider_rider_info = pd.read_sql_table("rider", conn)
 
 past_12_hours = datetime.fromtimestamp(datetime.now().timestamp() - (12 * 3600)).hour
 
-recent_rides = ride_df[ride_df["start_time"].dt.hour > past_12_hours].dropna()
+recent_rides = ride_rider_info[ride_rider_info["start_time"].dt.hour > past_12_hours].dropna()
 
-recent_rides["gender"] = recent_rides["rider_id"].apply(lambda x: rider_df["gender"].where(rider_df["rider_id"] == x).dropna().values[0])
+recent_rides["gender"] = recent_rides["rider_id"].apply(lambda x: rider_rider_info["gender"].where(rider_rider_info["rider_id"] == x).dropna().values[0])
 
 print(recent_rides["gender"])
 
-recent_rides["total_duration"] = recent_rides["start_time"].apply()
+
 
 print(recent_rides[["start_time", "end_time"]])
 
@@ -61,14 +62,115 @@ def get_rider_age(rider_dob: str) -> int:
     return math.floor((date.today() - rider_dob).days/365.25)
 
 
-def get_current_rider_name(engine):
-    df = execute_sql_query(CURRENT_RIDER_SQL, engine)
-    first_name = df.iloc[0]['first_name']
-    last_name = df.iloc[0]['last_name']
-    if df.iloc[0]['gender'] == 'male':
+def heart_rate_analysis(heart_rate: int, age: int) -> str:
+    """Analyses the heart rate of a rider and returns how safe
+    it is compared to their maximum safe heart rate for their age"""
+    mhr = 220 - age
+    if heart_rate < 40:
+        return "Extremely Low"
+    if heart_rate > mhr:
+        return "Dangerously High"
+    if heart_rate > (mhr - 20):
+        return "High"
+    else:
+        return "Safe"
+
+
+def get_current_rider_data(engine):
+    """Queries the database for all of the most up to date data on the current rider"""
+    rider_info = execute_sql_query(CURRENT_RIDER_SQL, engine)
+    first_name = rider_info.iloc[0]['first_name']
+    last_name = rider_info.iloc[0]['last_name']
+    if rider_info.iloc[0]['gender'] == 'male':
         gender = f"\u2642 Male"
     else:
         gender = f"\u2640 Female"
-    age = get_rider_age(df.iloc[0]['date_of_birth'])
+    age = get_rider_age(rider_info.iloc[0]['date_of_birth'])
 
-    return {"name": f"{first_name} {last_name}", "gender": gender, "age": age}
+    ride_data = execute_sql_query(RIDE_DATA_SQL, engine)
+    duration = round(ride_data.iloc[0]['duration'])
+    heart_rate = round(ride_data.iloc[0]['heart_rate'])
+    heart_safety = heart_rate_analysis(heart_rate, age)
+
+
+    return {"name": f"{first_name} {last_name}", "gender": gender, "age": age,
+            "duration": duration, "heart_rate": heart_rate, "heart_safety": heart_safety}
+
+
+def heart_rate_status_colour(heart_safety: str):
+    """Outputs a colour depending on the current heart safety status"""
+    if heart_safety == "Extremely Low" or heart_safety == "Dangerously High":
+        return "red"
+    if heart_safety == "High":
+        return "orange"
+    return "green"
+    
+
+def heart_rate_graph(engine):
+    """Create a ploty line graph, plotting heart rate against ride duration"""
+
+    data = execute_sql_query(HEART_RATE_SQL, engine)
+    # data = data[data['heart_rate'] != 0] # Not sure if I prefer with this or not
+    graph = px.line(data_frame=data, x="duration", y="heart_rate",
+                   labels={'duration': 'Ride Duration', 'heart_rate': 'Heart Rate (BPM)'})
+    graph.update_layout(
+        title = {
+         'text': "Heart Rate",
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 25, 'color': 'black'}
+        },
+    )
+    return graph
+
+
+def resistance_graph(engine):
+    """Create a ploty line graph, plotting resistance against ride duration"""
+    data = execute_sql_query(RESISTANCE_SQL, engine)
+    graph = px.line(data_frame=data, x="duration", y="resistance",
+                   labels={'duration': 'Ride Duration', 'resistance': 'Resistance'})
+    graph.update_layout(
+        title = {
+         'text': "Resistance",
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 25, 'color': 'black'}
+        },
+    )
+    return graph
+
+
+def power_graph(engine):
+    """Create a ploty line graph, plotting power against ride duration"""
+
+    data = execute_sql_query(POWER_SQL, engine)
+    graph = px.line(data_frame=data, x="duration", y="power",
+                   labels={'duration': 'Ride Duration', 'power': 'Power (W)'})
+    graph.update_layout(
+        title = {
+         'text': "Power",
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 25, 'color': 'black'}
+        },
+    )
+    return graph
+
+def rpm_graph(engine):
+    """Create a ploty line graph, plotting power against ride duration"""
+
+    data = execute_sql_query(RPM_SQL, engine)
+    graph = px.line(data_frame=data, x="duration", y="rpm",
+                   labels={'duration': 'Ride Duration', 'rpm': 'RPM'})
+    graph.update_layout(
+        title = {
+         'text': "RPM",
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 25, 'color': 'black'}
+        },
+    )
+    return graph
+
+
+
