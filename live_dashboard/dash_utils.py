@@ -1,11 +1,15 @@
 import os
-from datetime import datetime
+import math
+from datetime import datetime, date
 
 import pandas as pd
 import psycopg2
 from sqlalchemy import URL, create_engine
 from dotenv import load_dotenv
 
+import pandas as pd
+
+from sql_vars import CURRENT_RIDER_SQL
 
 def get_db_connection():
     """Connects to the database"""
@@ -46,3 +50,25 @@ print(recent_rides[["start_time", "end_time"]])
 
 
 
+
+def execute_sql_query(sql_query: str, engine):
+    with engine.connect() as conn:
+        return pd.read_sql(sql_query, conn)
+
+
+def get_rider_age(rider_dob: str) -> int:
+    """Finds the age of the rider at the start of their ride"""
+    return math.floor((date.today() - rider_dob).days/365.25)
+
+
+def get_current_rider_name(engine):
+    df = execute_sql_query(CURRENT_RIDER_SQL, engine)
+    first_name = df.iloc[0]['first_name']
+    last_name = df.iloc[0]['last_name']
+    if df.iloc[0]['gender'] == 'male':
+        gender = f"\u2642 Male"
+    else:
+        gender = f"\u2640 Female"
+    age = get_rider_age(df.iloc[0]['date_of_birth'])
+
+    return {"name": f"{first_name} {last_name}", "gender": gender, "age": age}
