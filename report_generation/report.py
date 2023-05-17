@@ -107,7 +107,7 @@ def get_avg_reading_riders_past_day(config: dict) -> Tuple[go.Figure,]:
 def html_write(total: str, gender: px, age: px, heart: px, power: px):
     """Writes the data into html"""
     with open(HTML_FILE, 'a') as f:
-        f.write(f"<html>\n<head>\n<title>Daily Report</title>\n</head>\n<body>\n<h1>Daily report</h1>\n<p1>{total}</p1>")
+        f.write(f'<html>\n<head>\n<title>Daily Report</title>\n<link rel="stylesheet" href="./style.css">\n</head>\n<body>\n<div class="heading">\n<h1>Daily report</h1>\n<p1>{total}</p1>\n</div>\n<div class="container" >')
         f.write(gender.to_html(full_html=False, include_plotlyjs='cdn'))
         f.write(age.to_html(full_html=False, include_plotlyjs='cdn'))
         f.write(heart.to_html(full_html=False, include_plotlyjs='cdn'))
