@@ -102,6 +102,7 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
     last_log_info = {}
 
     logs_to_input = []
+    print("Starting Consumer.")
     try:
         while running:
             message = consumer.poll(timeout=1.0)
@@ -113,13 +114,16 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
             message_dict = decode_message(message)
 
             if '[SYSTEM]' in message_dict:
-                rider_data = process_rider_info(message_dict)
-                rider_max_heart_rate = 220 - rider_data['rider_age']
-                alert_sent = False
+                try:
+                    rider_data = process_rider_info(message_dict)
+                    rider_max_heart_rate = 220 - rider_data['rider_age']
+                    alert_sent = False
 
-                address_id = add_address_to_database(rider_data['address_info'])
-                add_rider_data_to_database(rider_data['rider_info'], address_id)
-                ride_id = add_ride_data_to_database(rider_data['ride_info'])
+                    address_id = add_address_to_database(rider_data['address_info'])
+                    add_rider_data_to_database(rider_data['rider_info'], address_id)
+                    ride_id = add_ride_data_to_database(rider_data['ride_info'])
+                except:
+                    print("Error adding Ride to db, skipping to next ride.")
 
             elif '[INFO]' in message_dict and "Ride" in message_dict:
                 if ride_id == -1:
@@ -136,15 +140,12 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                 telemetry_info = process_telemetry_message(message_dict)
 
                 if telemetry_info['hrt'] > rider_max_heart_rate - 10 and alert_sent == False:
-                    print("sending message")
                     message = {"Subject": {"Data": "Heart Rate Alert"},
                                 "Body": {"Text": {"Data": f"This is an automated alert from your Deleton tracker. At your current \
 age, the maximum safe heart rate is {rider_max_heart_rate} bpm. You have reached \
 {telemetry_info['hrt']}. Please exercise with caution and remain safe."}}}
                     ses.send_email(Source="trainee.mohammed.simjee@sigmalabs.co.uk", Destination=email_recipients, Message=message)
                     alert_sent = True
-                    print("message sent")
-
 
                 if last_log == 'ride':
                     logs_to_input.append([
@@ -165,13 +166,20 @@ age, the maximum safe heart rate is {rider_max_heart_rate} bpm. You have reached
                 continue
 
             if len(logs_to_input) > 9:
-                add_metadata_to_database(logs_to_input)
-                logs_to_input = []
+                try:
+                    add_metadata_to_database(logs_to_input)
+                    logs_to_input = []
+                except:
+                    print("Error adding metadata to db, Data will be stored until next input attempt.")
 
     except Exception as err:
         print(err)
+        print("Error in Consumer, rebooting...")
+        return consume_messages(consumer, os.environ['TOPIC'])
     finally: 
         consumer.close()
+        print("Consumer Closing")
+
 
 
 if __name__ == "__main__":
