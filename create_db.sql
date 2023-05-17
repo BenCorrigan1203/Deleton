@@ -65,7 +65,7 @@ SET SEARCH_PATH=historical;
 
 CREATE TABLE IF NOT EXISTS rider_address 
 (address_id INT NOT NULL,
-house_num VARCHAR(5),
+house_num VARCHAR(20),
 street VARCHAR(50) NOT NULL,
 city VARCHAR(25) NOT NULL,
 post_code VARCHAR(8) NOT NULL,
