@@ -4,3 +4,5 @@ sqlalchemy
 numpy
 python-dotenv
 typing
+boto3
+kaleido

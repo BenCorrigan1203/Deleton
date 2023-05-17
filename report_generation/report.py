@@ -3,7 +3,8 @@ import plotly.graph_objects as go
 from sqlalchemy import create_engine, engine
 import pandas as pd
 import numpy as np
-from dotenv import dotenv_values
+import boto3
+from dotenv import load_dotenv, dotenv_values
 import os
 from typing import Tuple
 
@@ -19,9 +20,8 @@ def get_db_connection(config: dict) -> engine:
     return engine
 
 
-def get_rider_past_day(config: dict) -> str:
+def get_rider_past_day(engine: engine) -> str:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
-    engine = get_db_connection(config)
     conn = engine.connect()
     query = """SELECT start_time FROM ride_info WHERE DATEDIFF('hour', start_time, now()) <= 24;"""
     riders_day_df = pd.read_sql_table(query, conn, schema=HISTORICAL_SCHEMA)
@@ -31,9 +31,8 @@ def get_rider_past_day(config: dict) -> str:
     engine.dispose()
     return print_line
 
-def get_gender_rider_past_day(config: dict) -> go.Figure:
+def get_gender_rider_past_day(engine: engine) -> go.Figure:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
-    engine = get_db_connection(config)
     conn = engine.connect()
     query = """SELECT ride_info.start_time, rider.gender FROM ride_info
                JOIN rider on ride_info.rider_id = rider.rider_id 
@@ -49,9 +48,8 @@ def get_gender_rider_past_day(config: dict) -> go.Figure:
     engine.dispose()
     return gender_fig
 
-def get_age_rider_past_day(config: dict) -> go.Figure:
+def get_age_rider_past_day(engine: engine) -> go.Figure:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
-    engine = get_db_connection(config)
     conn = engine.connect()
     query = """SELECT ride_info.start_time, rider.dob FROM ride_info
                JOIN rider on ride_info.rider_id = rider.rider_id 
@@ -80,9 +78,8 @@ def group_age_data(riders_day_gender_df)-> pd.DataFrame:
     return age_group_count
 
 
-def get_avg_reading_riders_past_day(config: dict) -> Tuple[go.Figure,]:
+def get_avg_reading_riders_past_day(engine: engine) -> Tuple[go.Figure,]:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
-    engine = get_db_connection(config)
     conn = engine.connect()
     query = """SELECT ride_info.start_time, heart_rate.avg_heart_rate, power_w.avg_power FROM ride_info
                JOIN heart_rate on ride_info.heart_rate_id = heart_rate.heart_rate_id
@@ -114,11 +111,21 @@ def html_write(total: str, gender: px, age: px, heart: px, power: px):
         f.write(power.to_html(full_html=False, include_plotlyjs='cdn'))
         f.write("\n</body>\n</html>")
 
+def email_send():
+    config = dotenv_values("./../.env")
+    session = boto3.Session(aws_access_key_id=config["ACCESS_KEY"], aws_secret_access_key=config["SECRET_KEY"])
+    ses = session.client("ses")
+    email_recipients = {"ToAddresses": ["trainee.mohammed.simjee@sigmalabs.co.uk"], "CcAddresses": [], "BccAddresses": []}
+    with open ('report_graph.html') as file:
+        html_content = file_read()
+    message = {"Subject": {"Data": "test"}, "Body": {"Html": {"Data": html_content}}}
+    ses.send_email(Source="trainee.danishan.rahulan@sigmalabs.co.uk", Destination=email_recipients, Message=message)
 
 if __name__ == "__main__": 
-    config = dotenv_values()
-    total_riders = get_age_rider_past_day(config)
-    gender_fig = get_gender_rider_past_day(config)
-    age_fig = get_age_rider_past_day(config)
-    heart_fig, power_fig = get_avg_reading_riders_past_day(config)
+    load_dotenv()
+    engine = get_db_connection(os.environ)
+    total_riders = get_age_rider_past_day(engine)
+    gender_fig = get_gender_rider_past_day(engine)
+    age_fig = get_age_rider_past_day(engine)
+    heart_fig, power_fig = get_avg_reading_riders_past_day(engine)
     html_write(total_riders, gender_fig, age_fig, heart_fig)
