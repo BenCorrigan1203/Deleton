@@ -6,10 +6,11 @@ import pandas as pd
 import psycopg2
 from sqlalchemy import URL, create_engine
 from dotenv import load_dotenv
+import plotly.express as px
 
 import pandas as pd
 
-from sql_vars import CURRENT_RIDER_SQL
+from sql_vars import CURRENT_RIDER_SQL, RECENT_RIDES_SQL
 
 def get_db_connection():
     """Connects to the database"""
@@ -26,29 +27,6 @@ def get_db_connection():
     except Exception as err:
         print(err)
         print("Error connecting to database.")
-
-load_dotenv()
-
-conn = get_db_connection()
-
-ride_df = pd.read_sql_table("ride", conn)
-
-rider_df = pd.read_sql_table("rider", conn)
-
-past_12_hours = datetime.fromtimestamp(datetime.now().timestamp() - (12 * 3600)).hour
-
-recent_rides = ride_df[ride_df["start_time"].dt.hour > past_12_hours].dropna()
-
-recent_rides["gender"] = recent_rides["rider_id"].apply(lambda x: rider_df["gender"].where(rider_df["rider_id"] == x).dropna().values[0])
-
-print(recent_rides["gender"])
-
-recent_rides["total_duration"] = recent_rides["start_time"].apply()
-
-print(recent_rides[["start_time", "end_time"]])
-
-
-
 
 
 def execute_sql_query(sql_query: str, engine):
@@ -72,3 +50,17 @@ def get_current_rider_name(engine):
     age = get_rider_age(df.iloc[0]['date_of_birth'])
 
     return {"name": f"{first_name} {last_name}", "gender": gender, "age": age}
+
+
+load_dotenv()
+
+conn = get_db_connection()
+
+recent_rides = execute_sql_query(RECENT_RIDES_SQL, conn)
+
+gender_grouped_rides = recent_rides.groupby(recent_rides["gender"]).count()
+
+fig = px.bar(x=gender_grouped_rides.index, y=gender_grouped_rides["ride_id"])
+
+fig.show()
+

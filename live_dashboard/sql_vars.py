@@ -8,4 +8,6 @@ ORDER BY start_time DESC
 LIMIT 1;"""
 
 RECENT_RIDES_SQL = """
-SELECT * FROM """
+SELECT * FROM ride
+JOIN rider ON rider.rider_id = ride.rider_id
+WHERE AGE(ride.end_time, now()) <= INTERVAL '12 hours';"""
