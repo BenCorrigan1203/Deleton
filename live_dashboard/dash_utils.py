@@ -7,6 +7,7 @@ import psycopg2
 from sqlalchemy import URL, create_engine
 from dotenv import load_dotenv
 import plotly.express as px
+import numpy as np
 
 import pandas as pd
 
@@ -52,15 +53,39 @@ def get_current_rider_name(engine):
     return {"name": f"{first_name} {last_name}", "gender": gender, "age": age}
 
 
+def group_age_data(recent_rides_df)-> pd.DataFrame:
+    bins = [10, 20, 30, 40, 50, 60, 70, 105]
+    labels = ['10-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71+']
+    age_groups = pd.cut(recent_rides_df['age'], bins=bins, labels=labels, right=True)
+    age_group_count = recent_rides_df.groupby([age_groups])['start_time'].count().reset_index(name='count')
+    return age_group_count
+
+
 load_dotenv()
 
 conn = get_db_connection()
 
 recent_rides = execute_sql_query(RECENT_RIDES_SQL, conn)
 
+recent_rides['date_of_birth'] = pd.to_datetime(recent_rides['date_of_birth'])
+
+recent_rides['age'] = ((recent_rides["start_time"] - recent_rides['date_of_birth']).dt.days.astype(float)) * 0.00273973
+recent_rides['age'] = recent_rides['age'].apply(lambda x: int(np.floor(x)))
+
+recent_rides[""]
+
 gender_grouped_rides = recent_rides.groupby(recent_rides["gender"]).count()
+
+age_grouped_rides = group_age_data(recent_rides)
 
 fig = px.bar(x=gender_grouped_rides.index, y=gender_grouped_rides["ride_id"])
 
+fig2 = px.bar(age_grouped_rides, x="age", y="count")
+
+# fig3 = px.line(recent_rides, x="end_time", y=["avg_power", "max_power"])
+
 fig.show()
 
+fig2.show()
+
+# fig3.show()
