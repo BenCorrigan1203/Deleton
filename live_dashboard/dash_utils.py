@@ -7,10 +7,12 @@ import psycopg2
 from sqlalchemy import URL, create_engine
 from dotenv import load_dotenv
 import plotly.express as px
-
+import numpy as np
 import pandas as pd
 
+
 from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL
+
 
 def get_db_connection():
     """Connects to the database"""
@@ -27,29 +29,6 @@ def get_db_connection():
     except Exception as err:
         print(err)
         print("Error connecting to database.")
-
-load_dotenv()
-
-conn = get_db_connection()
-
-ride_rider_info = pd.read_sql_table("ride", conn)
-
-rider_rider_info = pd.read_sql_table("rider", conn)
-
-past_12_hours = datetime.fromtimestamp(datetime.now().timestamp() - (12 * 3600)).hour
-
-recent_rides = ride_rider_info[ride_rider_info["start_time"].dt.hour > past_12_hours].dropna()
-
-recent_rides["gender"] = recent_rides["rider_id"].apply(lambda x: rider_rider_info["gender"].where(rider_rider_info["rider_id"] == x).dropna().values[0])
-
-print(recent_rides["gender"])
-
-
-
-print(recent_rides[["start_time", "end_time"]])
-
-
-
 
 
 def execute_sql_query(sql_query: str, engine):
@@ -174,3 +153,40 @@ def rpm_graph(engine):
 
 
 
+
+def group_age_data(recent_rides_df)-> pd.DataFrame:
+    bins = [10, 20, 30, 40, 50, 60, 70, 105]
+    labels = ['10-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71+']
+    age_groups = pd.cut(recent_rides_df['age'], bins=bins, labels=labels, right=True)
+    age_group_count = recent_rides_df.groupby([age_groups])['start_time'].count().reset_index(name='count')
+    return age_group_count
+
+
+load_dotenv()
+
+conn = get_db_connection()
+
+recent_rides = execute_sql_query(RECENT_RIDES_SQL, conn)
+
+recent_rides['date_of_birth'] = pd.to_datetime(recent_rides['date_of_birth'])
+
+recent_rides['age'] = ((recent_rides["start_time"] - recent_rides['date_of_birth']).dt.days.astype(float)) * 0.00273973
+recent_rides['age'] = recent_rides['age'].apply(lambda x: int(np.floor(x)))
+
+recent_rides[""]
+
+gender_grouped_rides = recent_rides.groupby(recent_rides["gender"]).count()
+
+age_grouped_rides = group_age_data(recent_rides)
+
+fig = px.bar(x=gender_grouped_rides.index, y=gender_grouped_rides["ride_id"])
+
+fig2 = px.bar(age_grouped_rides, x="age", y="count")
+
+# fig3 = px.line(recent_rides, x="end_time", y=["avg_power", "max_power"])
+
+fig.show()
+
+fig2.show()
+
+# fig3.show()

@@ -5,3 +5,5 @@ sqlalchemy
 pandas
 python-dotenv
 plotly.express
+plotly
+nbformat==5.1.2

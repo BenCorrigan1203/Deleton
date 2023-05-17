@@ -60,3 +60,9 @@ ORDER BY recording_taken DESC
 LIMIT 1
 );
 """
+RECENT_RIDES_SQL = """
+SELECT * FROM ride
+JOIN rider ON rider.rider_id = ride.rider_id
+JOIN ride_metadata ON ride_metadata.ride_id = ride.ride_id
+WHERE AGE(ride.end_time, now()) <= INTERVAL '12 hours'
+ORDER BY start_time ASC;"""
