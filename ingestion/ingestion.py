@@ -197,7 +197,7 @@ if __name__ == "__main__":
     }
 
     session = boto3.Session(aws_access_key_id=os.environ["ACCESS_KEY"], aws_secret_access_key=os.environ["SECRET_KEY"])
-    ses = session.client("ses")
+    ses = session.client("ses", region_name='eu-west-2')
     email_recipients = {"ToAddresses": ["trainee.ben.corrigan@sigmalabs.co.uk"], "CcAddresses": [], "BccAddresses": []}
 
     consumer = Consumer(kafka_config)
