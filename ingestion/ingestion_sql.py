@@ -31,3 +31,8 @@ RETURNING ride_id"""
 METADATA_SQL = """INSERT INTO ride_metadata
 (heart_rate, rpm, power, duration, resistance, recording_taken, ride_id)
 VALUES %s"""
+
+
+END_RIDE_SQL = """UPDATE ride
+SET end_time = %s
+WHERE ride_id = %s"""
