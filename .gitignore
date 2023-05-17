@@ -164,3 +164,9 @@ transfer/tmp
 terraform.tfvars
 
 .terraform*
+.DS_Store
+.env
+venv/
+__pycache__
+variables.tf
+.terraform*
