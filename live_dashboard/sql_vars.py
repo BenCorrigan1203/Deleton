@@ -60,6 +60,7 @@ ORDER BY recording_taken DESC
 LIMIT 1
 );
 """
+
 RECENT_RIDES_SQL = """
 SELECT * FROM ride
 JOIN rider ON rider.rider_id = ride.rider_id

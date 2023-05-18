@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 
-from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL
+from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL, RECENT_RIDES_SQL
 
 
 def get_db_connection():
@@ -152,9 +152,8 @@ def rpm_graph(engine):
     return graph
 
 
-
-
 def group_age_data(recent_rides_df)-> pd.DataFrame:
+
     bins = [10, 20, 30, 40, 50, 60, 70, 105]
     labels = ['10-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71+']
     age_groups = pd.cut(recent_rides_df['age'], bins=bins, labels=labels, right=True)
@@ -162,31 +161,61 @@ def group_age_data(recent_rides_df)-> pd.DataFrame:
     return age_group_count
 
 
-load_dotenv()
+def gender_graph(engine):
 
-conn = get_db_connection()
+    data = execute_sql_query(RECENT_RIDES_SQL, engine)
+    
+    gender_grouped_rides = data.groupby(data["gender"]).count()
 
-recent_rides = execute_sql_query(RECENT_RIDES_SQL, conn)
+    graph = px.bar(x=gender_grouped_rides.index, y=gender_grouped_rides["ride_id"],
+                   labels={'x': 'Gender', 'y': 'Ride Count'})
+    
+    graph.update_layout(
+        title = {
+         'text': "Rides per Gender",
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 25, 'color': 'black'}
+        },
+    )
 
-recent_rides['date_of_birth'] = pd.to_datetime(recent_rides['date_of_birth'])
+    return graph
 
-recent_rides['age'] = ((recent_rides["start_time"] - recent_rides['date_of_birth']).dt.days.astype(float)) * 0.00273973
-recent_rides['age'] = recent_rides['age'].apply(lambda x: int(np.floor(x)))
 
-recent_rides[""]
+def age_graph(engine):
 
-gender_grouped_rides = recent_rides.groupby(recent_rides["gender"]).count()
+    data = execute_sql_query(RECENT_RIDES_SQL, engine)
 
-age_grouped_rides = group_age_data(recent_rides)
+    data['date_of_birth'] = pd.to_datetime(data['date_of_birth'])
 
-fig = px.bar(x=gender_grouped_rides.index, y=gender_grouped_rides["ride_id"])
+    data['age'] = ((data["start_time"] - data['date_of_birth']).dt.days.astype(float)) * 0.00273973
+    data['age'] = data['age'].apply(lambda x: int(np.floor(x)))
+    
+    age_grouped_rides = group_age_data(data)
 
-fig2 = px.bar(age_grouped_rides, x="age", y="count")
+    graph = px.bar(age_grouped_rides, x="age", y="count",
+                   labels={'age': 'Age', 'count': 'Ride Count'})
+    
+    graph.update_layout(
+        title = {
+         'text': "Rides per Age Group",
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 25, 'color': 'black'}
+        },
+    )
 
-# fig3 = px.line(recent_rides, x="end_time", y=["avg_power", "max_power"])
+    return graph
 
-fig.show()
 
-fig2.show()
+def metrics(engine) -> dict:
 
-# fig3.show()
+    data = execute_sql_query(RECENT_RIDES_SQL, engine)
+
+    total_power = round(data["power"].cumsum().max())
+    avg_power = round(data["power"].mean())
+    avg_resistance = round(data["resistance"].mean())
+
+    metrics_dict = {"total_power": total_power, "avg_power": avg_power, "avg_resistance": avg_resistance}
+
+    return metrics_dict
