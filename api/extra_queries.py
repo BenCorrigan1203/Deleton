@@ -29,42 +29,58 @@ def get_db_connection():
 conn = get_db_connection()
 
 def get_city():
-    '''SQL query to get cities.'''
-
+    '''SQL query to get all cities.'''
     try:
-        rider_ID = 'Walshtown'
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         query = "SELECT city FROM historical.rider_address;"
         # param = (rider_ID,)
         cur.execute(query)
 
-
         results = cur.fetchall()
-        return results
+        cities = []
+        for row in results:
+            cities.append(row["city"])
+        return cities
     except Exception as err:
         # print("Error connecting to database.", err)
         print(err)
 
-def get_total_riders_for_city():
+def get_total_riders_for_city(city: str):
     '''SQL query to get total number of rides for a given city.'''
 
     try:
-        rider_ID = 'Walshtown'
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        query = "SELECT COUNT(*) AS total_riders FROM historical.rider\
-              JOIN historical.rider_address ON rider.address_id = rider_address.address_id\
-                WHERE rider_address.city = %s;"
-        param = (rider_ID,)
+        query = """SELECT COUNT(*) AS total_riders FROM historical.rider
+              JOIN historical.rider_address ON rider.address_id = rider_address.address_id
+                WHERE rider_address.city = %s"""
+        param = (city,)
         cur.execute(query, param)
 
 
         results = cur.fetchall()
-            
+        
         return results
     except Exception as err:
         # print("Error connecting to database.", err)
         print(err)
 
+def get_leadboard():
+
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    query = """SELECT rider.rider_id, rider.first_name, rider.last_name, ride_info.ride_info_id,
+                    EXTRACT( epoch FROM( historical.ride_info.end_time - historical.ride_info.start_time)) as time_length
+                FROM historical.rider
+                JOIN historical.ride_info on rider.rider_id = ride_info.rider_id 
+                WHERE rider.rider_id = 4526
+                ORDER BY time_length DESC;"""
+    # query = "SELECT rider.rider_id FROM historical.rider;"
+    
+    cur.execute(query)
+    data = cur.fetchall()
+    for row in data:
+        print(f"Rider_id: {row['rider_id']}, Name: {row['first_name']} {row['last_name']}, ride_info_id: {row['ride_info_id']}, duration: {row['time_length']} seconds")
+
 if __name__== "__main__":
 
     print(get_city())
+    print(get_total_riders_for_city("North Raymond"))
