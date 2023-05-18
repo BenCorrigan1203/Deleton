@@ -1,4 +1,5 @@
 import re
+import math
 import json
 from datetime import datetime
 
@@ -58,6 +59,12 @@ def process_rider_name(fullname: str):
         return {"first_name": split_name[1], 'last_name': split_name[2]}
 
 
+def get_rider_age(rider_dob: str, ride_start_time: str) -> int:
+    """Finds the age of the rider at the start of their ride"""
+    start_date = datetime.strptime(ride_start_time, "%Y-%m-%d %H:%M:%S.%f").date()
+    dob_date = datetime.fromtimestamp(rider_dob/1000).date()
+    return math.floor((start_date - dob_date).days/365.25)
+
 def process_rider_info(decoded_system_message: dict) -> dict:
     """Processes the message received from the kafka stream if the message
     contains [SYSTEM] in it, indicating it is rider data"""
@@ -86,7 +93,9 @@ def process_rider_info(decoded_system_message: dict) -> dict:
         'start_time': start_time
     }
 
-    return {"rider_info": rider_info, "address_info": address, "ride_info": ride_info}
+    rider_age = get_rider_age(personal_info['date_of_birth'], start_time)
+
+    return {"rider_info": rider_info, "address_info": address, "ride_info": ride_info, "rider_age": rider_age}
 
 
 def create_dict_from_string(message: str) -> dict:
