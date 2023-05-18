@@ -82,9 +82,8 @@ def insert_ride_info(conn, meta_data, heart_id, resistance_id, power_id, rpm_id)
     cur.close()
 
 
-def delete_12_hours(config: dict):
+def delete_12_hours(conn):
     "Delete last 12 hour rides and metadata in daily schema"
-    conn = get_db_connection(config)
     cur = conn.cursor(cursor_factory=RealDictCursor)
     """delete last 12 hours of data from ride_metadata"""
     cur.execute(DELETE_META_SQL)
@@ -101,5 +100,5 @@ if __name__ == "__main__":
     meta_data = get_metadata(conn)
     heart_id, resistance_id, power_id, rpm_id = insert_resis_power_rpm_heart(conn, meta_data)
     insert_ride_info(conn, meta_data, heart_id, resistance_id, power_id, rpm_id)
-    # delete_12_hours(config)
+    delete_12_hours(conn)
     conn.close()

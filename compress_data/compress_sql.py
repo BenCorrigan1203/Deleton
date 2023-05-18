@@ -9,7 +9,7 @@ ADDRESS_SQL = f"""
             WHERE address_id IN(
                 SELECT address_id FROM {DAILY_SCHEMA}.rider
                 JOIN {DAILY_SCHEMA}.ride ON {DAILY_SCHEMA}.rider.rider_id = {DAILY_SCHEMA}.ride.rider_id
-                WHERE AGE(ride.end_time, now()) <= INTERVAL '24 hours'
+                WHERE ride.end_time >= now() - INTERVAL '24 hours'
             )
             ON CONFLICT DO NOTHING;"""
 
@@ -19,7 +19,7 @@ RIDER_SQL = f"""
             WHERE rider_id IN(
                 SELECT rider.rider_id FROM {DAILY_SCHEMA}.rider
                 JOIN {DAILY_SCHEMA}.ride ON {DAILY_SCHEMA}.rider.rider_id = {DAILY_SCHEMA}.ride.rider_id
-                WHERE AGE(ride.end_time, now()) <= INTERVAL '24 hours'
+                WHERE ride.end_time >= now() - INTERVAL '24 hours'
             )
             ON CONFLICT DO NOTHING;"""
 
@@ -40,7 +40,7 @@ METADATA_SQL = f"""
                 ride_metadata.ride_id
             FROM {DAILY_SCHEMA}.ride_metadata
             JOIN {DAILY_SCHEMA}.ride ON {DAILY_SCHEMA}.ride_metadata.ride_id = {DAILY_SCHEMA}.ride.ride_id
-            WHERE AGE(ride.end_time, now()) <= INTERVAL '24 hours'
+            WHERE ride.end_time >= now() - INTERVAL '24 hours'
             GROUP BY ride_metadata.ride_id;"""
 
 RESISTANCE_SQL = f"""
@@ -110,9 +110,9 @@ DELETE_META_SQL = f"""
                 DELETE FROM {DAILY_SCHEMA}.ride_metadata
                 WHERE ride_id IN(
                     SELECT ride_id FROM {DAILY_SCHEMA}.ride
-                    WHERE AGE(ride.end_time, now()) <= INTERVAL '12 hours' ); 
+                    WHERE ride.end_time < now() - INTERVAL '12 hours' ); 
                """
 
 DELETE_RIDE_SQL = f"""
                 DELETE FROM {DAILY_SCHEMA}.ride
-                WHERE AGE(ride.end_time, now()) <= INTERVAL '12 hours' );"""
+                WHERE ride.end_time < now() - INTERVAL '12 hours';"""
