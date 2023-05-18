@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 
-from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL
+from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL, RECENT_RIDES_SQL
 
 
 def get_db_connection():
