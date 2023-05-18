@@ -6,3 +6,4 @@ python-dotenv
 typing
 boto3
 kaleido
+xhtml2pdf
