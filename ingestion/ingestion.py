@@ -5,9 +5,10 @@ from confluent_kafka import Consumer
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import execute_values
+import boto3
 
 from ingestion_utils import decode_message, process_rider_info, process_ride_message, process_telemetry_message
-from ingestion_sql import ADDRESS_SQL, RIDER_SQL, RIDE_SQL, METADATA_SQL
+from ingestion_sql import ADDRESS_SQL, RIDER_SQL, RIDE_SQL, METADATA_SQL, END_RIDE_SQL
 
 def get_db_connection():
     """Connects to the database"""
@@ -38,7 +39,6 @@ def add_address_to_database(rider_address: dict) -> int:
                                   rider_address['postcode']])
         address_id = cur.fetchall()[0][0]
         conn.commit()
-    print(address_id)
     return address_id
 
 
@@ -79,6 +79,13 @@ def add_metadata_to_database(metadata: list[list]) -> None:
         conn.commit()
 
 
+def add_ride_end_time_to_db(end_time: str, ride_id: int) -> None:
+    """After the ride is over (which we can only really see occurs when a new ride starts)
+    We update the database ride row with the end time"""
+    with conn.cursor() as cur:
+        cur.execute(END_RIDE_SQL, [end_time, ride_id])
+        conn.commit()
+
 
 def consume_messages(consumer: Consumer, topic: str) -> None:
     """ A function that constantly polls the topic with a timeout of 1s,
@@ -89,10 +96,13 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
     running = True
 
     ride_id = -1
+    rider_max_heart_rate = -1
+    alert_sent = False
     last_log = ""
     last_log_info = {}
 
     logs_to_input = []
+    print("Starting Consumer.")
     try:
         while running:
             message = consumer.poll(timeout=1.0)
@@ -104,21 +114,22 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
             message_dict = decode_message(message)
 
             if '[SYSTEM]' in message_dict:
-                rider_data = process_rider_info(message_dict)
-                print(rider_data)
-                print("adding rider address")
-                address_id = add_address_to_database(rider_data['address_info'])
-                print("adding rider data")
-                add_rider_data_to_database(rider_data['rider_info'], address_id)
-                print("adding ride data")
-                ride_id = add_ride_data_to_database(rider_data['ride_info'])
+                try:
+                    rider_data = process_rider_info(message_dict)
+                    rider_max_heart_rate = 220 - rider_data['rider_age']
+                    alert_sent = False
+
+                    address_id = add_address_to_database(rider_data['address_info'])
+                    add_rider_data_to_database(rider_data['rider_info'], address_id)
+                    ride_id = add_ride_data_to_database(rider_data['ride_info'])
+                except:
+                    print("Error adding Ride to db, skipping to next ride.")
 
             elif '[INFO]' in message_dict and "Ride" in message_dict:
                 if ride_id == -1:
                     continue
 
                 ride_info = process_ride_message(message_dict)
-                print(ride_info)
                 last_log = 'ride'
                 last_log_info = ride_info
 
@@ -127,7 +138,15 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                     continue
 
                 telemetry_info = process_telemetry_message(message_dict)
-                print(telemetry_info)
+
+                if telemetry_info['hrt'] > rider_max_heart_rate - 10 and alert_sent == False:
+                    message = {"Subject": {"Data": "Heart Rate Alert"},
+                                "Body": {"Text": {"Data": f"This is an automated alert from your Deleton tracker. At your current \
+age, the maximum safe heart rate is {rider_max_heart_rate} bpm. You have reached \
+{telemetry_info['hrt']}. Please exercise with caution and remain safe."}}}
+                    ses.send_email(Source="trainee.mohammed.simjee@sigmalabs.co.uk", Destination=email_recipients, Message=message)
+                    alert_sent = True
+
                 if last_log == 'ride':
                     logs_to_input.append([
                         telemetry_info['hrt'],
@@ -138,22 +157,29 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
                         last_log_info['recording_time'],
                         ride_id
                     ])
-                else:
-                    last_log = 'telemetry'
-                    last_log_info = telemetry_info
+            elif "beginning of main" in message_dict and ride_id != -1:
+                try:
+                    add_ride_end_time_to_db(last_log_info['recording_time'], ride_id)
+                except:
+                    print("Could not add end_time to the ride database.")
             else:
                 continue
 
             if len(logs_to_input) > 9:
-                print("adding metadata")
-                add_metadata_to_database(logs_to_input)
-                print("done with metadata")
-                logs_to_input = []
+                try:
+                    add_metadata_to_database(logs_to_input)
+                    logs_to_input = []
+                except:
+                    print("Error adding metadata to db, Data will be stored until next input attempt.")
 
     except Exception as err:
         print(err)
+        print("Error in Consumer, rebooting...")
+        return consume_messages(consumer, os.environ['TOPIC'])
     finally: 
         consumer.close()
+        print("Consumer Closing")
+
 
 
 if __name__ == "__main__":
@@ -169,6 +195,10 @@ if __name__ == "__main__":
         'group.id':os.environ['CONSUMER_GROUP'],
         'auto.offset.reset': 'latest'
     }
+
+    session = boto3.Session(aws_access_key_id=os.environ["ACCESS_KEY"], aws_secret_access_key=os.environ["SECRET_KEY"])
+    ses = session.client("ses", region_name='eu-west-2')
+    email_recipients = {"ToAddresses": ["trainee.ben.corrigan@sigmalabs.co.uk"], "CcAddresses": [], "BccAddresses": []}
 
     consumer = Consumer(kafka_config)
 
