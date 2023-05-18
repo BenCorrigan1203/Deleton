@@ -34,11 +34,11 @@ layout = html.Div(id="main", children=[
         html.H1(style = {'textAlign': 'left', 'verticalAlign': 'middle', 'marginBottom': '2rem'}, children="Recent Rides"),
 
         html.Div(style=DIV_STYLE, children=[
-            html.H2(id="total_power_title", children="Cumulative Power"),
+            html.H2(id="total_power_title", children="Cumulative Power (Watts)"),
         ]),
 
         html.Div(style=DIV_STYLE, children=[
-            html.H2(id="avg_power_title", children="Average Power"),
+            html.H2(id="avg_power_title", children="Average Power (Watts)"),
         ]),
 
          html.Div(style=DIV_STYLE, children=[
