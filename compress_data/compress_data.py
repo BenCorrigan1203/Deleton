@@ -60,6 +60,7 @@ def insert_resis_power_rpm_heart(conn, meta_data):
         cur.execute(HEART_SQL, (meta_data[i]["heart_avg"],meta_data[i]["heart_max"],meta_data[i]["heart_min"],meta_data[i]["heart_avg"],meta_data[i]["heart_max"],meta_data[i]["heart_min"],))
         heart_id.append(cur.fetchone()['heart_rate_id'])
 
+
         "Inserting rpm readings and returning id"
         cur.execute(RPM_SQL, (meta_data[i]["rpm_avg"],meta_data[i]["rpm_max"],meta_data[i]["rpm_min"],meta_data[i]["rpm_avg"],meta_data[i]["rpm_max"],meta_data[i]["rpm_min"],))
         rpm_id.append(cur.fetchone()['rpm_id'])
