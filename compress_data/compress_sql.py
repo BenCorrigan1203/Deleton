@@ -110,9 +110,19 @@ DELETE_META_SQL = f"""
                 DELETE FROM {DAILY_SCHEMA}.ride_metadata
                 WHERE ride_id IN(
                     SELECT ride_id FROM {DAILY_SCHEMA}.ride
-                    WHERE ride.end_time < now() - INTERVAL '12 hours' ); 
+                    WHERE ride.end_time < now() - INTERVAL '12 hours' );
+
+                DELETE FROM {DAILY_SCHEMA}.ride_metadata
+                WHERE ride_id IN(
+                    SELECT ride_id FROM {DAILY_SCHEMA}.ride
+                    WHERE ride.start_time < now() - INTERVAL '12 hours'
+                    AND ride.end_time IS NULL); 
                """
 
 DELETE_RIDE_SQL = f"""
                 DELETE FROM {DAILY_SCHEMA}.ride
-                WHERE ride.end_time < now() - INTERVAL '12 hours';"""
+                WHERE ride.end_time < now() - INTERVAL '12 hours';
+                
+                DELETE FROM {DAILY_SCHEMA}.ride
+                WHERE ride.start_time < now() - INTERVAL '12 hours'
+                AND ride.end_time IS NULL;"""
