@@ -4,7 +4,7 @@ from dash_utils import get_db_connection, get_current_rider_data, heart_rate_sta
 from dotenv import load_dotenv
 
 
-dash.register_page(__name__, path="/")
+dash.register_page(__name__, path="/current_ride")
 load_dotenv()
 engine = get_db_connection()
 
