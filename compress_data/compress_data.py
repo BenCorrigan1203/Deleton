@@ -94,7 +94,7 @@ def delete_12_hours(conn):
     conn.commit()
     cur.close()
 
-if __name__ == "__main__": 
+def handler(event, context): 
     load_dotenv()
     conn = get_db_connection(os.environ)
     insert_rider_and_address(conn)
