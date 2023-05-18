@@ -5,7 +5,7 @@ resource "aws_db_instance" "deleton-rds" {
   allocated_storage      = 5
   engine                 = "postgres"
   username               = "postgres"
-  password               = var.db_password
+  password               = var.DB_PASSWORD
   publicly_accessible    = true
   skip_final_snapshot    = true
   db_subnet_group_name   = "c7-public-db-subnet-group"
@@ -15,7 +15,7 @@ resource "aws_db_instance" "deleton-rds" {
     command = "psql -h ${aws_db_instance.deleton-rds.address} -p 5432 -U \"postgres\" -d \"postgres\" -f \"create_db.sql\""
 
     environment = {
-      PGPASSWORD = "${var.db_password}"
+      PGPASSWORD = "${var.DB_PASSWORD}"
     }
   }
 }

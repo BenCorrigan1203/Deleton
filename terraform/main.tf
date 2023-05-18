@@ -39,8 +39,8 @@ resource "aws_lambda_function" "c7-deleton-lambda-compress" {
 
   environment {
     variables = {
-      DB_USER     = "${var.username}"
-      DB_PASSWORD = "${var.db_password}"
+      DB_USER     = "${var.DB_USER}"
+      DB_PASSWORD = "${var.DB_PASSWORD}"
       DB_HOST     = aws_db_instance.deleton-rds.address
       DB_PORT     = aws_db_instance.deleton-rds.port
 
@@ -112,11 +112,11 @@ resource "aws_lambda_function" "c7-deleton-lambda-daily-generate" {
 
   environment {
     variables = {
-      ACCESS_KEY  = "${var.access_key}"
-      SECRET_KEY  = "${var.secret_key}"
-      DB_USER     = "${var.username}"
-      DB_NAME     = "${var.username}"
-      DB_PASSWORD = "${var.db_password}"
+      ACCESS_KEY  = "${var.ACCESS_KEY}"
+      SECRET_KEY  = "${var.SECRET_KEY}"
+      DB_USER     = "${var.DB_USER}"
+      DB_NAME     = "${var.DB_NAME}"
+      DB_PASSWORD = "${var.DB_PASSWORD}"
       DB_HOST     = aws_db_instance.deleton-rds.address
       DB_PORT     = aws_db_instance.deleton-rds.port
     }
