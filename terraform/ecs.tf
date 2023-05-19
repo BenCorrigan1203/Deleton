@@ -122,7 +122,7 @@ resource "aws_ecs_task_definition" "c7-deleton-api-task-definition" {
   [
     {
       "name": "project-container",
-      "image": "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deleton-ingestion-script:latest",
+      "image": "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deleton-api:latest",
       "environment": [
         {"name": "ACCESS_KEY", "value":   "${var.ACCESS_KEY}"},
         {"name": "SECRET_KEY", "value":   "${var.SECRET_KEY}"},
