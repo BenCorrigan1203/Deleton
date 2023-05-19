@@ -169,4 +169,7 @@ venv/
 __pycache__
 variables.tf
 .terraform*
-.Dockerignore
+build.sh
+run.sh
+test.sh
+

@@ -1,78 +1,110 @@
 import plotly.express as px
 import plotly.graph_objects as go
-from sqlalchemy import create_engine, engine
+from sqlalchemy import create_engine, engine, URL
 import pandas as pd
 import numpy as np
-from dotenv import dotenv_values
+import boto3
+from dotenv import load_dotenv
 import os
 from typing import Tuple
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from botocore.exceptions import ClientError
+
+from xhtml2pdf import pisa
+import base64
+
+from report_utils import REPORT_HTML, HTML_STYLE
 
 
-DAILY_SCHEMA = "daily"
 HISTORICAL_SCHEMA = "historical"
 HTML_FILE = "report_graph.html"
+DIR_FILE_PATH = os.path.dirname(os.path.realpath(__file__))
+PDF_FILE_PATH = "/tmp/daily_report.pdf"
 
-def get_db_connection(config: dict) -> engine:
+
+def get_db_connection() -> engine:
     """Connect to an rds using sqlalchemy engines"""
-    db_uri = f'postgresql+psycopg2://{config["DATABASE_USERNAME"]}:{config["DATABASE_PASSWORD"]}@{config["DATABASE_IP"]}:{config["DATABASE_PORT"]}/{config["DATABASE_NAME"]}'
-    engine = create_engine(db_uri)
-    return engine
+    try:
+        url_object = URL.create(
+        "postgresql+psycopg2",
+        username=os.environ['DB_USER'],
+        password=os.environ['DB_PASSWORD'],
+        host=os.environ['DB_HOST'],
+        database=os.environ['DB_NAME'],
+        port=os.environ['DB_PORT']
+    )
+        return create_engine(url_object, connect_args={'options': f"-csearch_path={HISTORICAL_SCHEMA}"})
+    except Exception as err:
+        print(err)
+        print("Error connecting to database.")
 
 
-def get_rider_past_day(config: dict) -> str:
+def get_rider_past_day(engine: engine) -> str:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
-    engine = get_db_connection(config)
     conn = engine.connect()
-    query = """SELECT start_time FROM ride_info WHERE DATEDIFF('hour', start_time, now()) <= 24;"""
-    riders_day_df = pd.read_sql_table(query, conn, schema=HISTORICAL_SCHEMA)
+    query = """SELECT start_time FROM ride_info WHERE ride_info.end_time >= now() - INTERVAL '24 hours';"""
+    riders_day_df = pd.read_sql(query, conn)
     total_riders = riders_day_df["start_time"].count()
     print_line = f"Total number of riders in the last 24 hours: {total_riders}"
     conn.close()
     engine.dispose()
     return print_line
 
-def get_gender_rider_past_day(config: dict) -> go.Figure:
+
+def get_gender_rider_past_day(engine: engine) -> go.Figure:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
-    engine = get_db_connection(config)
     conn = engine.connect()
     query = """SELECT ride_info.start_time, rider.gender FROM ride_info
                JOIN rider on ride_info.rider_id = rider.rider_id 
-               WHERE DATEDIFF('hour', start_time, now()) <= 24;"""
-    riders_day_gender_df = pd.read_sql_table(query, conn, schema=HISTORICAL_SCHEMA)
+               WHERE ride_info.end_time >= now() - INTERVAL '24 hours'"""
+    riders_day_gender_df = pd.read_sql(query, conn)
     gender_count = riders_day_gender_df.groupby('gender')['start_time'].count().reset_index(name='count')
     gender_fig = px.bar(gender_count, x = 'gender', y = 'count', title="Gender split between riders in the last 24 hours")
     gender_fig.update_layout(
     xaxis_title='Gender',
-    yaxis_title='Count'
+    yaxis_title='Count',
+    title = {
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 20, 'color': 'black'}
+        }
     )
     conn.close()
     engine.dispose()
     return gender_fig
 
-def get_age_rider_past_day(config: dict) -> go.Figure:
+
+def get_age_rider_past_day(engine: engine) -> go.Figure:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
-    engine = get_db_connection(config)
     conn = engine.connect()
-    query = """SELECT ride_info.start_time, rider.dob FROM ride_info
+    query = """SELECT ride_info.start_time, rider.date_of_birth FROM ride_info
                JOIN rider on ride_info.rider_id = rider.rider_id 
-               WHERE DATEDIFF('hour', start_time, now()) <= 24;"""
-    riders_day_age_df = pd.read_sql_table(query, conn, schema=HISTORICAL_SCHEMA)
+               WHERE ride_info.end_time >= now() - INTERVAL '24 hours'"""
+    riders_day_age_df = pd.read_sql(query, conn)
 
     riders_day_age_df['start_time'] = pd.to_datetime(riders_day_age_df['start_time'])
-    riders_day_age_df['dob'] = pd.to_datetime(riders_day_age_df['dob'])
-    riders_day_age_df['age'] = ((riders_day_age_df['start_time'] - riders_day_age_df['dob']).dt.days.astype(float)) * 0.00273973 #converts to normal number
+    riders_day_age_df['date_of_birth'] = pd.to_datetime(riders_day_age_df['date_of_birth'])
+    riders_day_age_df['age'] = ((riders_day_age_df['start_time'] - riders_day_age_df['date_of_birth']).dt.days.astype(float)) * 0.00273973 #converts to normal number
     riders_day_age_df['age'] = riders_day_age_df['age'].apply(np.floor)
     total_riders_age = group_age_data(riders_day_age_df)
     age_fig = px.bar(total_riders_age, x = 'age', y = 'count', title="Age group split between riders in the last 24 hours")
     age_fig.update_layout(
     xaxis_title='Age',
-    yaxis_title='Count'
+    yaxis_title='Count',
+    title = {
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 20, 'color': 'black'}
+        }
     )
     conn.close()
     engine.dispose()
     return age_fig
 
-def group_age_data(riders_day_gender_df)-> pd.DataFrame:
+
+def group_age_data(riders_day_gender_df) -> pd.DataFrame:
     bins = [10, 20, 30, 40, 50, 60, 70, 105]
     labels = ['10-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71+']
     age_groups = pd.cut(riders_day_gender_df['age'], bins=bins, labels=labels, right=True)
@@ -80,45 +112,97 @@ def group_age_data(riders_day_gender_df)-> pd.DataFrame:
     return age_group_count
 
 
-def get_avg_reading_riders_past_day(config: dict) -> Tuple[go.Figure,]:
+def get_avg_reading_riders_past_day(engine: engine) -> Tuple[go.Figure,]:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
-    engine = get_db_connection(config)
     conn = engine.connect()
     query = """SELECT ride_info.start_time, heart_rate.avg_heart_rate, power_w.avg_power FROM ride_info
                JOIN heart_rate on ride_info.heart_rate_id = heart_rate.heart_rate_id
                JOIN power_w on ride_info.power_id = power_w.power_id
-               WHERE DATEDIFF('hour', start_time, now()) <= 24;"""
-    riders_day_reading_df = pd.read_sql_table(query, conn, schema=HISTORICAL_SCHEMA)
-    heart_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_heart_rate", color="avg_heart_rate", title="Average heart rate in the past day")
+               WHERE ride_info.end_time >= now() - INTERVAL '24 hours'"""
+    riders_day_reading_df = pd.read_sql(query, conn)
+    heart_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_heart_rate", color="avg_heart_rate", title="Average heart rate per user in the past day")
     heart_fig.update_layout(
     xaxis_title ="Time",
-    yaxis_title ="Heart rate"
+    yaxis_title ="Heart rate",
+    title = {
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 20, 'color': 'black'}
+        }
     )
-    power_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_power", color="avg_power", title="Average power in the past day")
+    power_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_power", color="avg_power", title="Average power per user in the past day")
     power_fig.update_layout(
     xaxis_title ="Time",
-    yaxis_title ="Power"
+    yaxis_title ="Power",
+    title = {
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 20, 'color': 'black'}
+        }
     )
     conn.close()
     engine.dispose()
     return heart_fig, power_fig
 
 
-def html_write(total: str, gender: px, age: px, heart: px, power: px):
-    """Writes the data into html"""
-    with open(HTML_FILE, 'a') as f:
-        f.write(f"<html>\n<head>\n<title>Daily Report</title>\n</head>\n<body>\n<h1>Daily report</h1>\n<p1>{total}</p1>")
-        f.write(gender.to_html(full_html=False, include_plotlyjs='cdn'))
-        f.write(age.to_html(full_html=False, include_plotlyjs='cdn'))
-        f.write(heart.to_html(full_html=False, include_plotlyjs='cdn'))
-        f.write(power.to_html(full_html=False, include_plotlyjs='cdn'))
-        f.write("\n</body>\n</html>")
+def generate_source_html(figures: list, html_layout: str, html_style: str, title_message: str) -> str:
+    template = ('<div class="plotly-graph-div""><img src="data:image/png;base64,{image}"></div>')
+    images = [base64.b64encode(figure.to_image()).decode('utf-8') for figure in figures]
+    images_html = ",\n".join([template.format(image=image) for image in images])    
+    return html_layout.format(style=html_style, print_line=title_message, images_html=images_html, file_path=DIR_FILE_PATH)
 
 
-if __name__ == "__main__": 
-    config = dotenv_values()
-    total_riders = get_age_rider_past_day(config)
-    gender_fig = get_gender_rider_past_day(config)
-    age_fig = get_age_rider_past_day(config)
-    heart_fig, power_fig = get_avg_reading_riders_past_day(config)
-    html_write(total_riders, gender_fig, age_fig, heart_fig)
+def convert_html_to_pdf(source_html: str, output_filename: str) -> str:
+    """Writes the html code to a pdf file"""
+    result_file = open(output_filename, "w+b")
+    pisa_status = pisa.CreatePDF(
+            source_html,
+            dest=result_file)
+    result_file.close()
+    return pisa_status.err
+
+
+def email_send() -> None:
+    region = "eu-west-2"
+    sws_user = os.environ["ACCESS_KEY"]
+    sws_key = os.environ["SECRET_KEY"]
+    subject = 'Sending email with Attachment '
+    body = "Dear Sir/Madam,\n\nPlease find our daily report file attached in the form of a PDF File.\n\nKind regards,\n\nDeleton Team"
+    client = boto3.client(service_name = 'ses', region_name = region, aws_access_key_id = sws_user, aws_secret_access_key = sws_key)
+
+    
+    message = MIMEMultipart()
+    message['Subject'] = subject
+
+    body_html = f"<pre>{body}</pre>"
+    part = MIMEText(body_html, 'html')
+    message.attach(part)
+
+    with open(PDF_FILE_PATH, 'r', encoding="latin-1") as file:
+        part = MIMEApplication(file.read(), 'pdf')
+        part.add_header("Content-Disposition",
+                            "attachment",
+                            filename=os.path.basename(PDF_FILE_PATH))
+    message.attach(part)
+    try:
+        result = client.send_raw_email(Source = "trainee.dani.rahulan@sigmalabs.co.uk", Destinations = ["trainee.ben.corrigan@sigmalabs.co.uk"], RawMessage = {'Data': message.as_string(),})
+        print( {'message': 'error','status' : 'fail'} if 'ErrorResponse' in result else {'message': 'mail sent successfully', 'status' : 'success'})
+    except ClientError as e:
+        print ({'message': e.response['Error']['Message'],'status' : 'fail'})
+
+
+
+def handler(event, context):
+    print("Starting the stuff")
+    load_dotenv()
+    engine = get_db_connection()
+
+    print_line = get_rider_past_day(engine)
+    gender_fig = get_gender_rider_past_day(engine)
+    age_fig = get_age_rider_past_day(engine)
+    heart_fig, power_fig = get_avg_reading_riders_past_day(engine)
+
+    report_html = generate_source_html([gender_fig, age_fig, heart_fig, power_fig], REPORT_HTML, HTML_STYLE, print_line)
+    convert_html_to_pdf(report_html, PDF_FILE_PATH)
+    email_send()
+
