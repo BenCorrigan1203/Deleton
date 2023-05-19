@@ -1,21 +1,30 @@
 # pylint: disable=unused-variable
+import os
 from datetime import datetime
 import psycopg2
 import psycopg2.extras
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 
 
-config = dotenv_values('.env')
+def get_credentials():
+    '''Retrive AWS credentials from local environment'''
+    try:
+        load_dotenv()
+        config = os.environ
+        return config
+    except Exception as err:
+        print("Error loading environment variables", err)
 
 def get_db_connection():
     '''Establish a connect with the database'''
+    config = get_credentials()
     try:
         conn = psycopg2.connect(
-            user = config["DATABASE_USERNAME"],
-            password = config["DATABASE_PASSWORD"],
-            host = config["DATABASE_IP"],
-            port = config["DATABASE_PORT"],
-            database = config["DATABASE_NAME"]
+            user = config.get("DATABASE_USERNAME"),
+            password = config.get("DATABASE_PASSWORD"),
+            host = config.get("DATABASE_IP"),
+            port = config.get("DATABASE_PORT"),
+            database = config.get("DATABASE_NAME")
             )
         print("Successful connection to the database")
         return conn
@@ -190,11 +199,3 @@ def get_total_riders_for_city(city: str) -> list[dict]:
         return results
     except Exception as err:
         print("Error connecting to database.", err)
-
-if __name__ == '__main__':
-    # print(get_rides(107))
-    # print(get_all_riders_rides(4513))
-    # print("today",get_daily_rides())
-    # print(get_rides_by_date("16-05-2023"))
-    # print(type(get_rider_ride_count(4513)))
-    print(get_leaderboard())
