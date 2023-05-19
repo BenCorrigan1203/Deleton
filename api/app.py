@@ -110,7 +110,7 @@ def get_leaderboard() -> dict:
     else:
         return jsonify({"Error": True, "Message": "Invalid API Key."}), 401
 
-@app.route("/city/<str:city>", methods=["GET"])
+@app.route("/city/<city>", methods=["GET"])
 def get_city_rides(city: str) -> dict:
     '''Get a rides in a specified city'''
     try:
