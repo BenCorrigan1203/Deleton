@@ -1,11 +1,13 @@
 # Deleton 🚴‍♀️🚴‍♂️🚴
 
+![plot](./report_generation/deleton.png)
+
 Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction of a architecture which collects raw Deleton kafka bike data to be processed for streams of outputs.
 
-- [Files]
-- [Installation]
-- [Architecture]
-- [Usage]
+- [Files](#)📁
+- [Installation](#)⬇️
+- [Architecture](#)🏛️
+- [Usage](#)📊
 
 ## Files
 
@@ -60,3 +62,6 @@ Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction o
 ### Database_reset
 
 ### This folder contains the files which create the dashboard using flask, for the riders.
+
+- database_reset.py : This file drops all the tables and then creates the tables in both schemas.
+- reset.sql : This file has all the SQL commands needed to drop and create
