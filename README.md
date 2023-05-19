@@ -1,6 +1,6 @@
-# Deleton 🚴‍♀️🚴‍♂️🚴
-
 ![plot](./report_generation/deleton.png)
+
+# Deleton 🚴‍♀️🚴‍♂️🚴
 
 Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction of a architecture which collects raw Deleton kafka bike data to be processed for streams of outputs.
 
@@ -65,3 +65,22 @@ Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction o
 
 - database_reset.py : This file drops all the tables and then creates the tables in both schemas.
 - reset.sql : This file has all the SQL commands needed to drop and create
+
+🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️
+
+## Installation
+
+To run this repo you will need to do the steps below.
+
+NOTE. For the installation process you should have terraform installed, alongside any of it's dependencies.
+
+1.  Within the terraform directory, "terraform_step_one", you would need to run the commands below to create the ecr:
+
+    `terraform init`
+
+    `terraform apply`
+
+2.  We now need to dockerize the lambda functions which we have written to be pushed to AWS ecr. Therefore, we need to the Ingestion, compress_data, report_generation, live_dashboard and database_reset folders and run the following commandsThis can be done with the commands below.
+
+    push dockerized images to ecr then
+    terraform apply again
