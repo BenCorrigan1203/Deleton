@@ -1,0 +1,4 @@
+daily_report.pdf
+venv/
+.env
+__pycache__
