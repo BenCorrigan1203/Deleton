@@ -64,7 +64,12 @@ def get_gender_rider_past_day(engine: engine    ) -> go.Figure:
     gender_fig = px.bar(gender_count, x = 'gender', y = 'count', title="Gender split between riders in the last 24 hours")
     gender_fig.update_layout(
     xaxis_title='Gender',
-    yaxis_title='Count'
+    yaxis_title='Count',
+    title = {
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 20, 'color': 'black'}
+        }
     )
     conn.close()
     engine.dispose()
@@ -87,7 +92,12 @@ def get_age_rider_past_day(engine: engine) -> go.Figure:
     age_fig = px.bar(total_riders_age, x = 'age', y = 'count', title="Age group split between riders in the last 24 hours")
     age_fig.update_layout(
     xaxis_title='Age',
-    yaxis_title='Count'
+    yaxis_title='Count',
+    title = {
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 20, 'color': 'black'}
+        }
     )
     conn.close()
     engine.dispose()
@@ -110,15 +120,25 @@ def get_avg_reading_riders_past_day(engine: engine) -> Tuple[go.Figure,]:
                JOIN power_w on ride_info.power_id = power_w.power_id
                WHERE ride_info.end_time >= now() - INTERVAL '24 hours'"""
     riders_day_reading_df = pd.read_sql(query, conn)
-    heart_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_heart_rate", color="avg_heart_rate", title="Average heart rate in the past day")
+    heart_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_heart_rate", color="avg_heart_rate", title="Average heart rate per user in the past day")
     heart_fig.update_layout(
     xaxis_title ="Time",
-    yaxis_title ="Heart rate"
+    yaxis_title ="Heart rate",
+    title = {
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 20, 'color': 'black'}
+        }
     )
-    power_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_power", color="avg_power", title="Average power in the past day")
+    power_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_power", color="avg_power", title="Average power per user in the past day")
     power_fig.update_layout(
     xaxis_title ="Time",
-    yaxis_title ="Power"
+    yaxis_title ="Power",
+    title = {
+         'x':0.5,
+         'xanchor': "center",
+         'font': {'size': 20, 'color': 'black'}
+        }
     )
     conn.close()
     engine.dispose()
@@ -134,7 +154,7 @@ def generate_source_html(figures: list, html_layout: str, html_style: str, title
 
 def convert_html_to_pdf(source_html, output_filename):
     """Writes the html code to a pdf file"""
-    result_file = open(f"{DIR_FILE_PATH}/{output_filename}", "w+b")
+    result_file = open(output_filename, "w+b")
     pisa_status = pisa.CreatePDF(
             source_html,
             dest=result_file)
@@ -173,16 +193,16 @@ def email_send():
 
 
 def handler(event, context):
-    return "Yay"
-    # print("Starting the stuff")
-    # load_dotenv()
-    # engine = get_db_connection()
+    print("Starting the stuff")
+    load_dotenv()
+    engine = get_db_connection()
 
-    # print_line = get_rider_past_day(engine)
-    # gender_fig = get_gender_rider_past_day(engine)
-    # age_fig = get_age_rider_past_day(engine)
-    # heart_fig, power_fig = get_avg_reading_riders_past_day(engine)
+    print_line = get_rider_past_day(engine)
+    gender_fig = get_gender_rider_past_day(engine)
+    age_fig = get_age_rider_past_day(engine)
+    heart_fig, power_fig = get_avg_reading_riders_past_day(engine)
 
-    # report_html = generate_source_html([gender_fig, age_fig, heart_fig, power_fig], REPORT_HTML, HTML_STYLE, print_line)
-    # convert_html_to_pdf(report_html, PDF_FILE_PATH)
-    # email_send()
+    report_html = generate_source_html([gender_fig, age_fig, heart_fig, power_fig], REPORT_HTML, HTML_STYLE, print_line)
+    convert_html_to_pdf(report_html, PDF_FILE_PATH)
+    email_send()
+

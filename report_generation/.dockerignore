@@ -2,3 +2,6 @@ daily_report.pdf
 venv/
 .env
 __pycache__
+build.sh
+run.sh
+test.sh
