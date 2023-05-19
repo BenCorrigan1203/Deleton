@@ -24,7 +24,7 @@ DIR_FILE_PATH = os.path.dirname(os.path.realpath(__file__))
 PDF_FILE_PATH = "/tmp/daily_report.pdf"
 
 
-def get_db_connection():
+def get_db_connection() -> engine:
     """Connect to an rds using sqlalchemy engines"""
     try:
         url_object = URL.create(
@@ -53,7 +53,7 @@ def get_rider_past_day(engine: engine) -> str:
     return print_line
 
 
-def get_gender_rider_past_day(engine: engine    ) -> go.Figure:
+def get_gender_rider_past_day(engine: engine) -> go.Figure:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
     conn = engine.connect()
     query = """SELECT ride_info.start_time, rider.gender FROM ride_info
@@ -104,7 +104,7 @@ def get_age_rider_past_day(engine: engine) -> go.Figure:
     return age_fig
 
 
-def group_age_data(riders_day_gender_df)-> pd.DataFrame:
+def group_age_data(riders_day_gender_df) -> pd.DataFrame:
     bins = [10, 20, 30, 40, 50, 60, 70, 105]
     labels = ['10-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71+']
     age_groups = pd.cut(riders_day_gender_df['age'], bins=bins, labels=labels, right=True)
@@ -145,14 +145,14 @@ def get_avg_reading_riders_past_day(engine: engine) -> Tuple[go.Figure,]:
     return heart_fig, power_fig
 
 
-def generate_source_html(figures: list, html_layout: str, html_style: str, title_message: str):
+def generate_source_html(figures: list, html_layout: str, html_style: str, title_message: str) -> str:
     template = ('<div class="plotly-graph-div""><img src="data:image/png;base64,{image}"></div>')
     images = [base64.b64encode(figure.to_image()).decode('utf-8') for figure in figures]
     images_html = ",\n".join([template.format(image=image) for image in images])    
     return html_layout.format(style=html_style, print_line=title_message, images_html=images_html, file_path=DIR_FILE_PATH)
 
 
-def convert_html_to_pdf(source_html, output_filename):
+def convert_html_to_pdf(source_html: str, output_filename: str) -> str:
     """Writes the html code to a pdf file"""
     result_file = open(output_filename, "w+b")
     pisa_status = pisa.CreatePDF(
@@ -162,7 +162,7 @@ def convert_html_to_pdf(source_html, output_filename):
     return pisa_status.err
 
 
-def email_send():
+def email_send() -> None:
     region = "eu-west-2"
     sws_user = os.environ["ACCESS_KEY"]
     sws_key = os.environ["SECRET_KEY"]
