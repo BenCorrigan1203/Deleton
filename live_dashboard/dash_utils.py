@@ -4,9 +4,10 @@ from datetime import datetime, date
 
 import pandas as pd
 import psycopg2
-from sqlalchemy import URL, create_engine
+from sqlalchemy import URL, create_engine, engine
 from dotenv import load_dotenv
 import plotly.express as px
+from plotly.graph_objects import Figure
 import numpy as np
 import pandas as pd
 
@@ -55,7 +56,7 @@ def heart_rate_analysis(heart_rate: int, age: int) -> str:
         return "Safe"
 
 
-def get_current_rider_data(engine):
+def get_current_rider_data(engine: engine) -> dict:
     """Queries the database for all of the most up to date data on the current rider"""
     rider_info = execute_sql_query(CURRENT_RIDER_SQL, engine)
     first_name = rider_info.iloc[0]['first_name']
@@ -76,7 +77,7 @@ def get_current_rider_data(engine):
             "duration": duration, "heart_rate": heart_rate, "heart_safety": heart_safety}
 
 
-def heart_rate_status_colour(heart_safety: str):
+def heart_rate_status_colour(heart_safety: str) -> str:
     """Outputs a colour depending on the current heart safety status"""
     if heart_safety == "Extremely Low" or heart_safety == "Dangerously High":
         return "red"
@@ -85,7 +86,7 @@ def heart_rate_status_colour(heart_safety: str):
     return "green"
     
 
-def heart_rate_graph(engine):
+def heart_rate_graph(engine: engine) -> Figure:
     """Create a ploty line graph, plotting heart rate against ride duration"""
 
     data = execute_sql_query(HEART_RATE_SQL, engine)
@@ -119,7 +120,7 @@ def resistance_graph(engine):
     return graph
 
 
-def power_graph(engine):
+def power_graph(engine: engine) -> Figure:
     """Create a ploty line graph, plotting power against ride duration"""
 
     data = execute_sql_query(POWER_SQL, engine)
@@ -135,7 +136,7 @@ def power_graph(engine):
     )
     return graph
 
-def rpm_graph(engine):
+def rpm_graph(engine: engine) -> Figure:
     """Create a ploty line graph, plotting power against ride duration"""
 
     data = execute_sql_query(RPM_SQL, engine)
@@ -152,7 +153,7 @@ def rpm_graph(engine):
     return graph
 
 
-def group_age_data(recent_rides_df)-> pd.DataFrame:
+def group_age_data(recent_rides_df: pd.DataFrame)-> pd.DataFrame:
 
     bins = [10, 20, 30, 40, 50, 60, 70, 105]
     labels = ['10-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71+']
@@ -161,7 +162,7 @@ def group_age_data(recent_rides_df)-> pd.DataFrame:
     return age_group_count
 
 
-def gender_graph(engine):
+def gender_graph(engine: engine) -> Figure:
 
     data = execute_sql_query(RECENT_RIDES_SQL, engine)
     
@@ -182,7 +183,7 @@ def gender_graph(engine):
     return graph
 
 
-def age_graph(engine):
+def age_graph(engine: engine) -> Figure:
 
     data = execute_sql_query(RECENT_RIDES_SQL, engine)
 
@@ -208,7 +209,7 @@ def age_graph(engine):
     return graph
 
 
-def metrics(engine) -> dict:
+def metrics(engine: engine) -> dict:
 
     data = execute_sql_query(RECENT_RIDES_SQL, engine)
 
