@@ -7,6 +7,7 @@ VALID_API = ["HIM", "WHO", "LOOM"]
 app = Flask(__name__)
 
 def api_key_auth(function):
+    '''Authentication for API endpoints.'''
     def decorated(*args, **kwargs):
         api_key_auth = request.headers.get('API-Key')
         if api_key_auth in VALID_API:
@@ -27,7 +28,8 @@ def get_rides(ride_id: int) -> dict:
         if request.method == "GET":
             rides = helper_functions.get_rides(ride_id)
             if len(rides) == 0:
-                return jsonify({"Ride Information": "Currently no data to show.","success": True}), 200
+                return jsonify({"Ride Information":\
+                                 "Currently no data to show.","success": True}), 200
             return rides
     except ValueError:
         return jsonify({"error": True, "Message": "Internal error."}), 500
@@ -40,7 +42,8 @@ def get_rider(rider_id: int) -> dict:
     try:
         rider = helper_functions.get_riders(rider_id)
         if len(rider) == 0:
-            return jsonify({"Rider's Information": "Currently no data to show.","success": True}), 200
+            return jsonify({"Rider's Information":\
+                             "Currently no data to show.","success": True}), 200
         data = {"Rider's Information": rider,"success": True}
         return data, 200
     except ValueError:
@@ -54,7 +57,8 @@ def get_rider_rides(rider_id: int) -> dict:
     try:
         rider = helper_functions.get_all_riders_rides(rider_id)
         if len(rider) == 0:
-            return jsonify({"Rider's Rides": "Currently no data to show.","success": True}), 200
+            return jsonify({"Rider's Rides":\
+                             "Currently no data to show.","success": True}), 200
         data = {"Rider's Rides": rider,"success": True}
         return data, 200
     except ValueError:
@@ -68,7 +72,8 @@ def get_rider_rides_duration(rider_id: int) -> dict:
     try:
         rider_durations = helper_functions.get_rider_durations(rider_id)
         if len(rider_durations) == 0:
-            return jsonify({"Rider's Ride Durations": "Currently no data to show.","success": True}), 200
+            return jsonify({"Rider's Ride Durations":\
+                             "Currently no data to show.","success": True}), 200
         data = {"Rider's Ride Durations": rider_durations,"success": True}
         return data, 200
     except ValueError:
@@ -85,7 +90,8 @@ def get_daily_rides_today() -> dict:
             try:
                 rides_by_date = helper_functions.get_rides_by_date(args)
                 if len(rides_by_date) == 0:
-                    return jsonify({"Rides": "Currently no data to show.","success": True}), 200
+                    return jsonify({"Rides":\
+                                     "Currently no data to show.","success": True}), 200
                 data = {"Rides": rides_by_date,"success": True}
                 return data, 200
             except ValueError:
@@ -96,7 +102,8 @@ def get_daily_rides_today() -> dict:
             try:
                 daily_rides = helper_functions.get_daily_rides()
                 if len(daily_rides) == 0:
-                    return jsonify({"Todays Rides": "Currently no data to show.","success": True}), 200
+                    return jsonify({"Todays Rides":\
+                                     "Currently no data to show.","success": True}), 200
                 data = {"Todays Rides": daily_rides,"success": True}
                 return data, 200
             except ValueError:
