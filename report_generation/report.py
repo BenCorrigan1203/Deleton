@@ -29,11 +29,11 @@ def get_db_connection():
     try:
         url_object = URL.create(
         "postgresql+psycopg2",
-        username=os.environ['DATABASE_USERNAME'],
-        password=os.environ['DATABASE_PASSWORD'],
-        host=os.environ['DATABASE_IP'],
-        database=os.environ['DATABASE_NAME'],
-        port=os.environ['DATABASE_PORT']
+        username=os.environ['DB_USER'],
+        password=os.environ['DB_PASSWORD'],
+        host=os.environ['DB_HOST'],
+        database=os.environ['DB_NAME'],
+        port=os.environ['DB_PORT']
     )
         return create_engine(url_object, connect_args={'options': f"-csearch_path={HISTORICAL_SCHEMA}"})
     except Exception as err:
