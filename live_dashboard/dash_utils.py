@@ -104,7 +104,7 @@ def heart_rate_graph(engine: engine) -> Figure:
     return graph
 
 
-def resistance_graph(engine):
+def resistance_graph(engine: engine) -> Figure:
     """Create a ploty line graph, plotting resistance against ride duration"""
     data = execute_sql_query(RESISTANCE_SQL, engine)
     graph = px.line(data_frame=data, x="duration", y="resistance",
