@@ -135,7 +135,7 @@ NOTE. For the installation process you should have terraform installed, alongsid
 
 - This section provides some analyses for Data Analysts, key information on historical rides which have taken place.
 
-![Biking](https://tenor.com/embed.js)
+![Biking](https://media.tenor.com/eAWUMLOkGigAAAAi/bike-biking.gif)
 
 ## Usage / outputs 📊
 
