@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 
-from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL, RECENT_RIDES_SQL
+from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL, RECENT_RIDES_SQL, RECENT_RIDES_SQL_METRICS
 
 
 def get_db_connection():
@@ -32,7 +32,7 @@ def get_db_connection():
         print("Error connecting to database.")
 
 
-def execute_sql_query(sql_query: str, engine):
+def execute_sql_query(sql_query: str, engine: engine) -> pd.DataFrame:
     with engine.connect() as conn:
         return pd.read_sql(sql_query, conn)
 
@@ -211,7 +211,7 @@ def age_graph(engine: engine) -> Figure:
 
 def metrics(engine: engine) -> dict:
 
-    data = execute_sql_query(RECENT_RIDES_SQL, engine)
+    data = execute_sql_query(RECENT_RIDES_SQL_METRICS, engine)
 
     total_power = round(data["power"].cumsum().max())
     avg_power = round(data["power"].mean())
