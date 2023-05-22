@@ -45,7 +45,7 @@ layout = html.Div(id="main", children=[
             html.H2(id="avg_resistance_title", children="Average Resistance"),
         ]),
 
-        html.Hr(style={'border': '1px solid black', 'width': '80%'}),
+        html.Hr(style={'border': '1px solid black', 'width': '90%'}),
 
         html.Div(style=DIV_STYLE, children=[
             html.H2(id="total_power", children=""),
