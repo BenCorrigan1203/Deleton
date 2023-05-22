@@ -1,25 +1,27 @@
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from psycopg2.extensions import connection
+from typing import List, Tuple
 import os
 from compress_sql import ADDRESS_SQL, RIDER_SQL, METADATA_SQL, RESISTANCE_SQL, POWER_SQL, HEART_SQL, RPM_SQL, RIDE_SQL, RIDE_INFO_SQL, DELETE_META_SQL, DELETE_RIDE_SQL
 
 
-def get_db_connection(config: dict=os.environ):
+def get_db_connection(config: dict=os.environ) -> connection:
     """establishes connection to database"""
     try:
-        connection = psycopg2.connect(user = config["DATABASE_USERNAME"], \
-                                      host = config["DATABASE_IP"], \
-                                      database = config["DATABASE_NAME"],\
-                                      password = config["DATABASE_PASSWORD"],\
-                                      port = config["DATABASE_PORT"])
+        connection = psycopg2.connect(user = config["DB_USER"], \
+                                      host = config["DB_HOST"], \
+                                      database = config["DB_NAME"],\
+                                      password = config["DB_PASSWORD"],\
+                                      port = config["DB_PORT"])
         return connection
     except Exception as err:
         print("Error connecting to database.")
         print(err)
 
 
-def insert_rider_and_address(conn):
+def insert_rider_and_address(conn: connection):
     "connect and extract 24 hour data from schema and insert to historical schema"
     cur = conn.cursor(cursor_factory=RealDictCursor)
     """Copying across rider_address to historical schema"""
@@ -30,7 +32,7 @@ def insert_rider_and_address(conn):
     conn.commit()
     cur.close()
 
-def get_metadata(conn):
+def get_metadata(conn: connection):
     """extracting all metadata readings"""
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(METADATA_SQL)
@@ -40,7 +42,7 @@ def get_metadata(conn):
     return meta_data
 
     
-def insert_resis_power_rpm_heart(conn, meta_data):
+def insert_resis_power_rpm_heart(conn: connection, meta_data: list[dict]) -> Tuple[List[int],List[int],List[int],List[int]]:
     """Inserting all readings in appropriate tables"""
     cur = conn.cursor(cursor_factory=RealDictCursor)
     resistance_id = []
@@ -69,7 +71,7 @@ def insert_resis_power_rpm_heart(conn, meta_data):
     return heart_id, resistance_id, power_id, rpm_id
 
 
-def insert_ride_info(conn, meta_data, heart_id, resistance_id, power_id, rpm_id):
+def insert_ride_info(conn: connection, meta_data: list[dict], heart_id: list, resistance_id: list, power_id: list, rpm_id: list):
     """gathering and inserting ride_info data"""
     cur = conn.cursor(cursor_factory=RealDictCursor)
     ride_id = []
@@ -83,7 +85,7 @@ def insert_ride_info(conn, meta_data, heart_id, resistance_id, power_id, rpm_id)
     cur.close()
 
 
-def delete_12_hours(conn):
+def delete_12_hours(conn: connection):
     "Delete last 12 hour rides and metadata in daily schema"
     cur = conn.cursor(cursor_factory=RealDictCursor)
     """delete last 12 hours of data from ride_metadata"""
@@ -94,7 +96,7 @@ def delete_12_hours(conn):
     conn.commit()
     cur.close()
 
-if __name__ == "__main__": 
+def handler(event, context): 
     load_dotenv()
     conn = get_db_connection(os.environ)
     insert_rider_and_address(conn)

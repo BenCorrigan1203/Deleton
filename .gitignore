@@ -170,3 +170,7 @@ venv/
 __pycache__
 variables.tf
 .terraform*
+build.sh
+run.sh
+test.sh
+

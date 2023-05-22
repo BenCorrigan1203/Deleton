@@ -11,8 +11,8 @@ SET SEARCH_PATH=daily;
 CREATE TABLE IF NOT EXISTS rider_address (
     address_id INT GENERATED ALWAYS AS IDENTITY,
     house_no VARCHAR(20) NOT NULL,
-    street_name VARCHAR(20) NOT NULL,
-    city VARCHAR(20) NOT NULL,
+    street_name VARCHAR(50) NOT NULL,
+    city VARCHAR(30) NOT NULL,
     postcode VARCHAR(10) NOT NULL,
     PRIMARY KEY (address_id),
     UNIQUE (house_no, street_name, city, postcode)
@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS rider_address (
 
 CREATE TABLE IF NOT EXISTS rider (
     rider_id INT NOT NULL,
-    first_name VARCHAR(20) NOT NULL,
-    last_name VARCHAR(20) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
     gender VARCHAR(10) NOT NULL,
     address_id INT NOT NULL,
     date_of_birth DATE NOT NULL,
@@ -66,7 +66,7 @@ SET SEARCH_PATH=historical;
 CREATE TABLE IF NOT EXISTS rider_address 
 (address_id INT NOT NULL,
 house_no VARCHAR(20),
-street VARCHAR(50) NOT NULL,
+street_name VARCHAR(50) NOT NULL,
 city VARCHAR(25) NOT NULL,
 postcode VARCHAR(10) NOT NULL,
 PRIMARY KEY (address_id),
