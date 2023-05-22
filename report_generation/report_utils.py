@@ -50,6 +50,6 @@ REPORT_HTML = '''
         <div class="container" >
         {images_html}
         </div>
-        <img src="{file_path}/deleton.png">
+        <img src="{file_path}/deloton.png">
     </body>
     '''
