@@ -13,7 +13,7 @@ Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction o
 
 ### Ingestion
 
-### This folder contains files related to the ingestion for our pipeline, which gathers data from the kafka.
+#### This folder contains files related to the ingestion for our pipeline, which gathers data from the kafka.
 
 - ingestion.py : This file allows us to consume and sort the kafka data, which is then sent to the database for short term storage
 - ingestion_utils.py : This file can be considered as a helper function for the ingestion.py in order to split the raw data
@@ -22,7 +22,7 @@ Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction o
 
 ### Terraform
 
-### This folder contains the files related to the creation of all of our AWS services, including RDS. Lambda functions and ECRs.
+#### This folder contains the files related to the creation of all of our AWS services, including RDS. Lambda functions and ECRs.
 
 - ecr.tf : This file contains the the terraform resource creation for the ECR for each part of the architecture.
 - ecs.tf : This file contains the ECS dependable resources such as the clusters, task definitions and event bridge.
@@ -33,7 +33,7 @@ Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction o
 
 ### Compress_data
 
-### This folder contains the files required to transfer the data from the AWS RDS daily schema to the historical schema
+#### This folder contains the files required to transfer the data from the AWS RDS daily schema to the historical schema
 
 - compress_data.py : This file extracts all rider information exceeding the past 24 hours from the daily schema, formats it, and uploads the data to the historical schema. Additionally, it deletes data in the daily historical schema that is older than 12 hours.
 - compress_sql.py : This file contains all the SQL commands for the compress_data.py, to allow easier code consumption.
@@ -41,7 +41,7 @@ Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction o
 
 ### Report_generation
 
-### This folder contains the files which create the documentation for the C-suite, attached to an email.
+#### This folder contains the files which create the documentation for the C-suite, attached to an email.
 
 - report.py : This file uses the daily schema and extracts several graphs and information from the last 24 hours to form a PDF, which is then sent in an email.
 - report_utils.py : This file contains "helper" functions for the report.py to help make the report.py easier to consume.
@@ -50,7 +50,7 @@ Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction o
 
 ### Live_dashboard
 
-### This folder contains the files which create the dashboard using flask, for the riders.
+#### This folder contains the files which create the dashboard using flask, for the riders.
 
 - dash_utils.py : This file contains the python scripts to contact the database and form the figures needed in the dashboard.
 - sql_vars.py : This file contains the SQL commands used in the dash_utils.py to allow that file to be easier to consume.
@@ -61,7 +61,7 @@ Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction o
 
 ### Database_reset
 
-### This folder contains the files which create the dashboard using flask, for the riders.
+#### This folder contains the files which create the dashboard using flask, for the riders.
 
 - database_reset.py : This file drops all the tables and then creates the tables in both schemas.
 - reset.sql : This file has all the SQL commands needed to drop and create
@@ -135,7 +135,7 @@ NOTE. For the installation process you should have terraform installed, alongsid
 
 - This section provides some analyses for Data Analysts, key information on historical rides which have taken place.
 
-![Biking](https://tenor.com/bBo2Z.gif)
+![Biking](<div class="tenor-gif-embed" data-postid="21268407" data-share-method="host" data-aspect-ratio="1.22605" data-width="100%"><a href="https://tenor.com/view/bike-biking-cycling-sport-cyclist-gif-21268407">Bike Biking Sticker</a>from <a href="https://tenor.com/search/bike-stickers">Bike Stickers</a></div> <script type="text/javascript" async src="https://tenor.com/embed.js"></script>)
 
 ## Usage / outputs 📊
 
