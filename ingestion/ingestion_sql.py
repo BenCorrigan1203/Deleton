@@ -30,7 +30,7 @@ RETURNING ride_id;"""
 
 METADATA_SQL = """INSERT INTO ride_metadata
 (heart_rate, rpm, power, duration, resistance, recording_taken, ride_id)
-VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+VALUES (%s, %s, %s, %s, %s, %s, %s)
 ON CONFLICT DO NOTHING;"""
 
 
