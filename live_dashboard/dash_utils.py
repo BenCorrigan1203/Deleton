@@ -168,8 +168,6 @@ def gender_graph(engine: engine) -> Figure:
     
     gender_grouped_rides = data.groupby(data["gender"]).count()
 
-    print(gender_grouped_rides)
-
     graph = px.bar(x=gender_grouped_rides.index, y=gender_grouped_rides["ride_id"],
                    labels={'x': 'Gender', 'y': 'Ride Count'})
     
