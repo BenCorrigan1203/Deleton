@@ -4,10 +4,10 @@
 
 Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction of a architecture which collects raw Deleton kafka bike data to be processed for streams of outputs.
 
-- [Files](#files)📁
-- [Installation](#installation)⬇️
-- [Architecture](#architecture)🏛️
-- [Usage](#usage)📊
+- [Files](##files)📁
+- [Installation](##installation)⬇️
+- [Architecture](##architecture)🏛️
+- [Usage](##usage)📊
 
 ## Files 📁
 
