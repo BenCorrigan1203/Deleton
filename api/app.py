@@ -1,25 +1,24 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
 import helper_functions
 
-VALID_API = ["HIM", "WHO", "LOOM"]
-# Makes sure that our Flask server refers to our file ("app.py")
+
 app = Flask(__name__)
 
-def api_key_auth(function):
-    '''Authentication for API endpoints.'''
+def auth_required(function) -> dict:
+    '''Authentication decorator for API endpoints.'''
     def decorated(*args, **kwargs):
         api_key_auth = request.headers.get('API-Key')
-        if api_key_auth in VALID_API:
+        config = helper_functions.get_credentials()
+        if api_key_auth in config.get("API_PASSWORD"):
             return function(*args, **kwargs)
-        else:
-            return jsonify({"Error": True, "Message": "Invalid API Key."}), 401
+        return jsonify({"Error": True, "Message": "Invalid API Key."}), 401
     return decorated
 
 @app.route("/", methods=["GET"])
-def get_home():
+def get_home() -> str:
     '''Return HTML of the home page'''
-    return 'Hello, Welcome to the Deleton API!'
+    return render_template('index.html')
 
 @app.route("/ride/<int:ride_id>/", methods=["GET"])
 def get_rides(ride_id: int) -> dict:
@@ -32,6 +31,19 @@ def get_rides(ride_id: int) -> dict:
                                  "Currently no data to show.","success": True}), 200
             return rides
     except ValueError:
+        return jsonify({"error": True, "Message": "Incorrect value entered."}), 500
+    except Exception:
+        return jsonify({"error": True, "Message": "Internal error."}), 405
+
+@app.route("/ride/<int:ride_id>/", methods=["DELETE"])
+@auth_required
+def delete_rides(ride_id: int) -> dict:
+    '''Delete a ride using a specific ID'''
+    try:
+        if request.method == "DELETE":
+            helper_functions.get_rides(ride_id)
+            return jsonify({"Deletion": True, "success": True}), 200
+    except TypeError:
         return jsonify({"error": True, "Message": "Internal error."}), 500
     except Exception:
         return jsonify({"error": True, "Message": "Internal error."}), 405
@@ -47,7 +59,7 @@ def get_rider(rider_id: int) -> dict:
         data = {"Rider's Information": rider,"success": True}
         return data, 200
     except ValueError:
-        return jsonify({"error": True, "Message": "Internal error."}), 500
+        return jsonify({"error": True, "Message": "Incorrect value entered."}), 500
     except Exception:
         return jsonify({"error": True, "Message": "Internal error."}), 405
 
@@ -62,7 +74,7 @@ def get_rider_rides(rider_id: int) -> dict:
         data = {"Rider's Rides": rider,"success": True}
         return data, 200
     except ValueError:
-        return jsonify({"error": True, "Message": "Internal error."}), 500
+        return jsonify({"error": True, "Message": "Incorrect value entered."}), 500
     except Exception:
         return jsonify({"error": True, "Message": "Internal error."}), 405
 
@@ -77,7 +89,7 @@ def get_rider_rides_duration(rider_id: int) -> dict:
         data = {"Rider's Ride Durations": rider_durations,"success": True}
         return data, 200
     except ValueError:
-        return jsonify({"error": True, "Message": "Internal error."}), 500
+        return jsonify({"error": True, "Message": "Incorrect value entered."}), 500
     except Exception:
         return jsonify({"error": True, "Message": "Internal error."}), 405
 
@@ -95,7 +107,7 @@ def get_daily_rides_today() -> dict:
                 data = {"Rides": rides_by_date,"success": True}
                 return data, 200
             except ValueError:
-                return jsonify({"error": True, "Message": "Internal error."}), 500
+                return jsonify({"error": True, "Message": "Incorrect value entered."}), 500
             except Exception:
                 return jsonify({"error": True, "Message": "Internal error."}), 405
         else:
@@ -107,40 +119,46 @@ def get_daily_rides_today() -> dict:
                 data = {"Todays Rides": daily_rides,"success": True}
                 return data, 200
             except ValueError:
-                return jsonify({"error": True, "Message": "Internal error.", "args": "args"}), 500
+                return jsonify({"error": True, "Message": "Incorrect value entered."}), 500
             except Exception:
                 return jsonify({"error": True, "Message": "Internal error."}), 405
 
-
 @app.route("/leaderboard/", methods=["GET"])
 def get_leaderboard() -> dict:
-    '''Get a ride using a specific ID'''
-    args = request.args.get("api")
-    if args in VALID_API:
+    '''Get a leaderboard of most rides by riders'''
+    try:
+        if request.method == "GET":
+            leaderboard = helper_functions.get_leaderboard()
+            data = {"Leaderboard": leaderboard, "success": True}
+            return data, 200
+    except ValueError:
+        return jsonify({"error": True, "Message": "Internal error."}), 500
+    except Exception:
+        return jsonify({"error": True, "Message": "Internal error."}), 405
+
+@app.route("/city/", methods=["GET"])
+def get_city_rides() -> dict:
+    '''Get a rides in a specified city'''
+    city = request.args.get("city")
+    if city is not None:
         try:
             if request.method == "GET":
-                leaderboard = helper_functions.get_leaderboard()
-                data = {"Leaderboard": leaderboard, "success": True}
+                city_rides = helper_functions.get_all_riders_rides(city)
+                data = {f"Rides in {city}": city_rides, "success": True}
                 return data, 200
         except ValueError:
             return jsonify({"error": True, "Message": "Internal error."}), 500
         except Exception:
             return jsonify({"error": True, "Message": "Internal error."}), 405
     else:
-        return jsonify({"Error": True, "Message": "Invalid API Key."}), 401
-
-@app.route("/city/<city>", methods=["GET"])
-def get_city_rides(city: str) -> dict:
-    '''Get a rides in a specified city'''
-    try:
-        if request.method == "GET":
-            city_rides = helper_functions.get_all_riders_rides(city)
-            data = {f"Rides in {city}": city_rides, "success": True}
+        try:
+            cities = helper_functions.get_city()
+            data = {"List of cities to search": cities, "success": True}
             return data, 200
-    except ValueError:
-        return jsonify({"error": True, "Message": "Internal error."}), 500
-    except Exception:
-        return jsonify({"error": True, "Message": "Internal error."}), 405
+        except ValueError:
+            return jsonify({"error": True, "Message": "Internal error."}), 500
+        except Exception:
+            return jsonify({"error": True, "Message": "Internal error."}), 405
 
 
 

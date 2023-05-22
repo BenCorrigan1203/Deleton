@@ -3,10 +3,11 @@ import os
 from datetime import datetime
 import psycopg2
 import psycopg2.extras
+from psycopg2.extensions import connection
 from dotenv import load_dotenv
 
 
-def get_credentials():
+def get_credentials() -> dict:
     '''Retrive AWS credentials from local environment'''
     try:
         load_dotenv()
@@ -15,7 +16,7 @@ def get_credentials():
     except Exception as err:
         print("Error loading environment variables", err)
 
-def get_db_connection():
+def get_db_connection() -> connection:
     '''Establish a connect with the database'''
     config = get_credentials()
     try:
@@ -34,7 +35,7 @@ def get_db_connection():
 conn = get_db_connection()
 
 def get_rider_ride_count(rider_id) -> list[dict]:
-    '''SQL query to get number of rides for a given rider.'''
+    '''Get number of rides for a given rider.'''
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         query = """SELECT COUNT(*) FROM historical.ride_info WHERE rider_id = %s;"""
@@ -47,7 +48,7 @@ def get_rider_ride_count(rider_id) -> list[dict]:
         print("Error connecting to database.", err)
 
 def get_riders(rider_id: int) -> list[dict]:
-    '''SQL query to get rides'''
+    '''Get rides of specified rider using rider's ID'''
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         query = """SELECT rider.first_name, rider.last_name, rider.gender,
@@ -67,7 +68,7 @@ def get_riders(rider_id: int) -> list[dict]:
         print("Error connecting to database.", err)
 
 def get_rides(ride_id: int) -> list[dict]:
-    '''SQL query to get riders information'''
+    '''Get information on rides'''
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         query = """SELECT * FROM historical.ride_info WHERE ride_info_id = %s"""
@@ -79,8 +80,18 @@ def get_rides(ride_id: int) -> list[dict]:
     except Exception as err:
         print("Error connecting to database.", err)
 
+def delete_rides(ride_id: int) -> None:
+    '''Delete ride information using specified ride's ID'''
+    try:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        query = """DELETE * FROM historical.ride_info WHERE ride_info_id = %s"""
+        param = (ride_id,)
+        cur.execute(query, param)
+    except Exception as err:
+        print("Error connecting to database.", err)
+
 def get_all_riders_rides(rider_id: int) -> list[dict]:
-    '''SQL query to get all rides for a rider with a specific ID' '''
+    '''Get all rides for a rider with a specific ID' '''
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         query = """SELECT * FROM historical.ride_info WHERE rider_id = %s"""
@@ -93,12 +104,12 @@ def get_all_riders_rides(rider_id: int) -> list[dict]:
         print("Error connecting to database.", err)
 
 def get_daily_rides() -> list[dict]:
-    '''SQL query to get rides of the date specified'''
+    '''Get rides of the date specified'''
     try:
         today = datetime.today().strftime('%d-%m-%Y')
         query_date = datetime.strptime(today,'%d-%m-%Y' )
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        query = """SELECT * FROM historical.ride_info WHERE DATE(end_time) = %s"""
+        query = """SELECT * FROM daily.ride WHERE DATE(end_time) = %s"""
         param = (query_date,)
         cur.execute(query, param)
 
@@ -108,7 +119,7 @@ def get_daily_rides() -> list[dict]:
         print("Error connecting to database.", err)
 
 def get_rides_by_date(date: str) -> list[dict]:
-    '''SQL query to get rides of the date specified'''
+    '''Get rides of the date specified'''
     try:
         query_date = datetime.strptime(date,'%d-%m-%Y' )
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -122,7 +133,7 @@ def get_rides_by_date(date: str) -> list[dict]:
         print("Error connecting to database.", err)
 
 def get_leaderboard() -> list[dict]:
-    '''SQL query to get ordered list of riders ride count'''
+    '''Get ordered list of riders ride count'''
     query = """SELECT rider.rider_id, rider.first_name, rider.last_name,
                 COUNT(ride_info.ride_info_id) AS count_rides
                 FROM historical.rider
@@ -147,7 +158,7 @@ def get_leaderboard() -> list[dict]:
     return leaderboard
 
 def get_rider_durations(rider_id: int) -> list[dict]:
-    '''SQL query to get'''
+    '''Get duration of specified rider's rides'''
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         query = """SELECT rider.rider_id, rider.first_name, rider.last_name, ride_info.ride_info_id,
@@ -171,7 +182,7 @@ def get_rider_durations(rider_id: int) -> list[dict]:
         print("Error connecting to database.", err)
 
 def get_city() -> list[dict]:
-    '''SQL query to get all cities.'''
+    '''Get all current cities with rides.'''
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         query = "SELECT city FROM historical.rider_address;"
@@ -186,7 +197,7 @@ def get_city() -> list[dict]:
         print("Error connecting to database.", err)
 
 def get_total_riders_for_city(city: str) -> list[dict]:
-    '''SQL query to get total number of rides for a given city.'''
+    '''Get total number of rides for a given city.'''
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         query = """SELECT COUNT(*) AS total_riders FROM historical.rider
