@@ -188,7 +188,7 @@ To view realtime dashboard for riders at a glance using the this link [LINK]
 ### Tableau
 
 To view the live tableau dashboard, please login to our tableau server
-![Tableau](hhttps://i.ibb.co/dk5QdqH/Tableau-Dashboard.png)
+![Tableau](https://i.ibb.co/dk5QdqH/Tableau-Dashboard.png)
 
 - Above image shows leaderboard of riders which can be filtered on longest individual ride, highest power output and longest cumulative ride time by a rider.
 
