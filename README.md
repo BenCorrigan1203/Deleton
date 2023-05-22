@@ -188,13 +188,13 @@ To view realtime dashboard for riders at a glance using the this link [LINK]
 ### Tableau
 
 To view the live tableau dashboard, please login to our tableau server
-[LEADERBOARD_IMAGE]
+![Tableau](https://ibb.co/zP4SyYt)
 
 - Above image shows leaderboard of riders which can be filtered on longest individual ride, highest power output and longest cumulative ride time by a rider.
 
 ### Daily report
 
-[IMAGE_OF_PDF]
+![Daily_report](https://ibb.co/RNGD3st)
 
 - Example of the daily report given to C-suits each day via email, where we see total number of riders and 4 graphs. Graph 1 showing the riders of the past day split by gender, graph 2 showing riders of the past day split by age brackets, graph 3 showing average heart rates of riders during the day, and the last graph showing average power of riders during the day.
 
