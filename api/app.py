@@ -5,7 +5,7 @@ import helper_functions
 
 app = Flask(__name__)
 
-def auth_required(function):
+def auth_required(function) -> dict:
     '''Authentication decorator for API endpoints.'''
     def decorated(*args, **kwargs):
         api_key_auth = request.headers.get('API-Key')
@@ -16,7 +16,7 @@ def auth_required(function):
     return decorated
 
 @app.route("/", methods=["GET"])
-def get_home():
+def get_home() -> str:
     '''Return HTML of the home page'''
     return render_template('index.html')
 

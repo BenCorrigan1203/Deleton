@@ -3,10 +3,11 @@ import os
 from datetime import datetime
 import psycopg2
 import psycopg2.extras
+from psycopg2.extensions import connection
 from dotenv import load_dotenv
 
 
-def get_credentials():
+def get_credentials() -> dict:
     '''Retrive AWS credentials from local environment'''
     try:
         load_dotenv()
@@ -15,7 +16,7 @@ def get_credentials():
     except Exception as err:
         print("Error loading environment variables", err)
 
-def get_db_connection():
+def get_db_connection() -> connection:
     '''Establish a connect with the database'''
     config = get_credentials()
     try:
