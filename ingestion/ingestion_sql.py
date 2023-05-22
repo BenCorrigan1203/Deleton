@@ -30,7 +30,8 @@ RETURNING ride_id"""
 
 METADATA_SQL = """INSERT INTO ride_metadata
 (heart_rate, rpm, power, duration, resistance, recording_taken, ride_id)
-VALUES %s"""
+VALUES %s
+ON CONFLICT DO NOTHING"""
 
 
 END_RIDE_SQL = """UPDATE ride
