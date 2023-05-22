@@ -93,6 +93,7 @@ def heart_rate_graph(engine: engine) -> Figure:
     # data = data[data['heart_rate'] != 0] # Not sure if I prefer with this or not
     graph = px.line(data_frame=data, x="duration", y="heart_rate",
                    labels={'duration': 'Ride Duration', 'heart_rate': 'Heart Rate (BPM)'})
+    graph.data[0].line.color = '#333333'
     graph.update_layout(
         title = {
          'text': "Heart Rate",
@@ -109,6 +110,7 @@ def resistance_graph(engine: engine) -> Figure:
     data = execute_sql_query(RESISTANCE_SQL, engine)
     graph = px.line(data_frame=data, x="duration", y="resistance",
                    labels={'duration': 'Ride Duration', 'resistance': 'Resistance'})
+    graph.data[0].line.color = '#7FC37E'
     graph.update_layout(
         title = {
          'text': "Resistance",
@@ -126,6 +128,8 @@ def power_graph(engine: engine) -> Figure:
     data = execute_sql_query(POWER_SQL, engine)
     graph = px.line(data_frame=data, x="duration", y="power",
                    labels={'duration': 'Ride Duration', 'power': 'Power (W)'})
+    graph.data[0].line.color = '#333333'
+
     graph.update_layout(
         title = {
          'text': "Power",
@@ -142,6 +146,7 @@ def rpm_graph(engine: engine) -> Figure:
     data = execute_sql_query(RPM_SQL, engine)
     graph = px.line(data_frame=data, x="duration", y="rpm",
                    labels={'duration': 'Ride Duration', 'rpm': 'RPM'})
+    graph.data[0].line.color = '#7FC37E'
     graph.update_layout(
         title = {
          'text': "RPM",
@@ -171,6 +176,9 @@ def gender_graph(engine: engine) -> Figure:
     graph = px.bar(x=gender_grouped_rides.index, y=gender_grouped_rides["ride_id"],
                    labels={'x': 'Gender', 'y': 'Ride Count'})
     
+    colours = ['#333333', '#7FC37E']
+    graph.data[0].marker.color = [colours[i % len(colours)] for i in range(len(graph.data[0].y))]
+
     graph.update_layout(
         title = {
          'text': "Rides per Gender",
@@ -197,6 +205,9 @@ def age_graph(engine: engine) -> Figure:
     graph = px.bar(age_grouped_rides, x="age", y="count",
                    labels={'age': 'Age', 'count': 'Ride Count'})
     
+    colours = ['#333333', '#7FC37E']
+    graph.data[0].marker.color = [colours[i % len(colours)] for i in range(len(graph.data[0].y))]
+
     graph.update_layout(
         title = {
          'text': "Rides per Age Group",
