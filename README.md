@@ -135,7 +135,7 @@ NOTE. For the installation process you should have terraform installed, alongsid
 
 - This section provides some analyses for Data Analysts, key information on historical rides which have taken place.
 
-![Biking](https://media.tenor.com/bTDIPxWB1kMAAAAi/moving-man.gif)
+![Biking](https://media.tenor.com/bTDIPxWB1kMAAAAi/moving-man.gif)![Biking](https://media.tenor.com/bTDIPxWB1kMAAAAi/moving-man.gif)
 
 ## Usage / outputs 📊
 
@@ -188,15 +188,15 @@ To view realtime dashboard for riders at a glance using the this link [LINK]
 ### Tableau
 
 To view the live tableau dashboard, please login to our tableau server
-![Tableau](https://i.ibb.co/dk5QdqH/Tableau-Dashboard.png)
+
+![Tableau](https://imgtr.ee/images/2023/05/22/woHwM.png)
 
 - Above image shows leaderboard of riders which can be filtered on longest individual ride, highest power output and longest cumulative ride time by a rider.
 
 ### Daily report
 
-![Daily_report](https://imgtr.ee/i/screenshot-2023-05-22-151806.wojKq)
+![Daily_report](https://imgtr.ee/images/2023/05/22/wojKq.png)
 
 - Example of the daily report given to C-suits each day via email, where we see total number of riders and 4 graphs. Graph 1 showing the riders of the past day split by gender, graph 2 showing riders of the past day split by age brackets, graph 3 showing average heart rates of riders during the day, and the last graph showing average power of riders during the day.
 
 🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️
-![Daily_report](https://imgtr.ee/images/2023/05/22/wojKq.png)
