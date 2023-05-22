@@ -4,10 +4,10 @@
 
 Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction of a architecture which collects raw Deleton kafka bike data to be processed for streams of outputs.
 
-- [Files](##files)📁
-- [Installation](##installation)⬇️
-- [Architecture](##architecture)🏛️
-- [Usage](##usage)📊
+- [Files](#files-)📁
+- [Installation](#installation-%EF%B8%8F)⬇️
+- [Architecture](#architecture-%EF%B8%8F)🏛️
+- [Usage](#usage--outputs-)📊
 
 ## Files 📁
 
@@ -197,3 +197,5 @@ To view the live tableau dashboard, please login to our tableau server
 [IMAGE_OF_PDF]
 
 - Example of the daily report given to C-suits each day via email, where we see total number of riders and 4 graphs. Graph 1 showing the riders of the past day split by gender, graph 2 showing riders of the past day split by age brackets, graph 3 showing average heart rates of riders during the day, and the last graph showing average power of riders during the day.
+
+🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️
