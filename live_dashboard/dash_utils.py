@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 
-from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL, RECENT_RIDES_SQL
+from sql_vars import CURRENT_RIDER_SQL, RIDE_DATA_SQL, HEART_RATE_SQL, POWER_SQL, RESISTANCE_SQL, RPM_SQL, RECENT_RIDES_SQL, RECENT_RIDES_SQL_METRICS
 
 
 def get_db_connection():
@@ -32,7 +32,7 @@ def get_db_connection():
         print("Error connecting to database.")
 
 
-def execute_sql_query(sql_query: str, engine):
+def execute_sql_query(sql_query: str, engine: engine) -> pd.DataFrame:
     with engine.connect() as conn:
         return pd.read_sql(sql_query, conn)
 
@@ -93,6 +93,7 @@ def heart_rate_graph(engine: engine) -> Figure:
     # data = data[data['heart_rate'] != 0] # Not sure if I prefer with this or not
     graph = px.line(data_frame=data, x="duration", y="heart_rate",
                    labels={'duration': 'Ride Duration', 'heart_rate': 'Heart Rate (BPM)'})
+    graph.data[0].line.color = '#333333'
     graph.update_layout(
         title = {
          'text': "Heart Rate",
@@ -109,6 +110,7 @@ def resistance_graph(engine: engine) -> Figure:
     data = execute_sql_query(RESISTANCE_SQL, engine)
     graph = px.line(data_frame=data, x="duration", y="resistance",
                    labels={'duration': 'Ride Duration', 'resistance': 'Resistance'})
+    graph.data[0].line.color = '#7FC37E'
     graph.update_layout(
         title = {
          'text': "Resistance",
@@ -126,6 +128,8 @@ def power_graph(engine: engine) -> Figure:
     data = execute_sql_query(POWER_SQL, engine)
     graph = px.line(data_frame=data, x="duration", y="power",
                    labels={'duration': 'Ride Duration', 'power': 'Power (W)'})
+    graph.data[0].line.color = '#333333'
+
     graph.update_layout(
         title = {
          'text': "Power",
@@ -142,6 +146,7 @@ def rpm_graph(engine: engine) -> Figure:
     data = execute_sql_query(RPM_SQL, engine)
     graph = px.line(data_frame=data, x="duration", y="rpm",
                    labels={'duration': 'Ride Duration', 'rpm': 'RPM'})
+    graph.data[0].line.color = '#7FC37E'
     graph.update_layout(
         title = {
          'text': "RPM",
@@ -171,6 +176,9 @@ def gender_graph(engine: engine) -> Figure:
     graph = px.bar(x=gender_grouped_rides.index, y=gender_grouped_rides["ride_id"],
                    labels={'x': 'Gender', 'y': 'Ride Count'})
     
+    colours = ['#333333', '#7FC37E']
+    graph.data[0].marker.color = [colours[i % len(colours)] for i in range(len(graph.data[0].y))]
+
     graph.update_layout(
         title = {
          'text': "Rides per Gender",
@@ -197,6 +205,9 @@ def age_graph(engine: engine) -> Figure:
     graph = px.bar(age_grouped_rides, x="age", y="count",
                    labels={'age': 'Age', 'count': 'Ride Count'})
     
+    colours = ['#333333', '#7FC37E']
+    graph.data[0].marker.color = [colours[i % len(colours)] for i in range(len(graph.data[0].y))]
+
     graph.update_layout(
         title = {
          'text': "Rides per Age Group",
@@ -211,7 +222,7 @@ def age_graph(engine: engine) -> Figure:
 
 def metrics(engine: engine) -> dict:
 
-    data = execute_sql_query(RECENT_RIDES_SQL, engine)
+    data = execute_sql_query(RECENT_RIDES_SQL_METRICS, engine)
 
     total_power = round(data["power"].cumsum().max())
     avg_power = round(data["power"].mean())
