@@ -194,8 +194,9 @@ To view the live tableau dashboard, please login to our tableau server
 
 ### Daily report
 
-![Daily_report](https://i.ibb.co/7Qx1nZB/Screenshot-2023-05-22-at-15-18-06.png)
+![Daily_report](https://imgtr.ee/i/screenshot-2023-05-22-151806.wojKq)
 
 - Example of the daily report given to C-suits each day via email, where we see total number of riders and 4 graphs. Graph 1 showing the riders of the past day split by gender, graph 2 showing riders of the past day split by age brackets, graph 3 showing average heart rates of riders during the day, and the last graph showing average power of riders during the day.
 
 🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️
+![Daily_report](https://imgtr.ee/images/2023/05/22/wojKq.png)
