@@ -188,14 +188,12 @@ def consume_messages(consumer: Consumer, topic: str) -> None:
             decoded_message = decode_message(message)
             processed_data = process_message(decoded_message, ride_id, last_log, last_log_info,
                                              max_heart_rate, alert_sent_status)
-
-            if processed_data is None:
-                continue
-            ride_id = processed_data['current_ride_id']
-            alert_sent_status = processed_data['alert_status']
-            last_log = processed_data['last_log']
-            last_log_info = processed_data['last_log_info']
-            max_heart_rate = processed_data['max_heart_rate']
+            if processed_data:
+                ride_id = processed_data['current_ride_id']
+                alert_sent_status = processed_data['alert_status']
+                last_log = processed_data['last_log']
+                last_log_info = processed_data['last_log_info']
+                max_heart_rate = processed_data['max_heart_rate']
     except Exception as err:
         print(err)
         print("Error in Consumer, rebooting...")
