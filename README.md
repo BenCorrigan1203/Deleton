@@ -135,7 +135,7 @@ NOTE. For the installation process you should have terraform installed, alongsid
 
 - This section provides some analyses for Data Analysts, key information on historical rides which have taken place.
 
-![Biking](<div class="tenor-gif-embed" data-postid="21268407" data-share-method="host" data-aspect-ratio="1.22605" data-width="100%"><a href="https://tenor.com/view/bike-biking-cycling-sport-cyclist-gif-21268407">Bike Biking Sticker</a>from <a href="https://tenor.com/search/bike-stickers">Bike Stickers</a></div> <script type="text/javascript" async src="https://tenor.com/embed.js"></script>)
+![Biking](https://tenor.com/embed.js)
 
 ## Usage / outputs 📊
 
