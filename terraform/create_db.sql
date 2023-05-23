@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS rider_address (
 
 CREATE TABLE IF NOT EXISTS rider (
     rider_id INT NOT NULL,
-    first_name VARCHAR(20) NOT NULL,
-    last_name VARCHAR(20) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
     gender VARCHAR(10) NOT NULL,
     address_id INT NOT NULL,
     date_of_birth DATE NOT NULL,

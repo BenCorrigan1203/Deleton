@@ -18,4 +18,5 @@ resource "aws_db_instance" "deleton-rds" {
       PGPASSWORD = "${var.DB_PASSWORD}"
     }
   }
+
 }

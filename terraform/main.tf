@@ -1,3 +1,4 @@
+# Creating Lambda and Step functions
 # Creata lambda IAM policy
 data "aws_iam_policy_document" "assume_role" {
   statement {
@@ -33,7 +34,7 @@ resource "aws_lambda_function" "c7-deleton-lambda-compress" {
   role          = aws_iam_role.lambda-role.arn
   memory_size   = 3010
   timeout       = 120
-  image_uri     = "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deleton-ingestion-script:latest"
+  image_uri     = "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deleton-compression-script:latest"
   package_type  = "Image"
   architectures = ["arm64"]
 
@@ -46,26 +47,6 @@ resource "aws_lambda_function" "c7-deleton-lambda-compress" {
 
     }
   }
-}
-
-# Create compress schedule for lambda function 
-resource "aws_cloudwatch_event_rule" "c7-schedule-lambda-compress" {
-  name                = "c7-schedule-lambda-compress"
-  schedule_expression = "rate(1 day)"
-}
-# Create compress schedule target for lambda function 
-resource "aws_cloudwatch_event_target" "c7-schedule-target-compress" {
-  rule = aws_cloudwatch_event_rule.c7-schedule-lambda-compress.name
-  arn  = aws_lambda_function.c7-deleton-lambda-compress.arn
-}
-
-# Create compress trigger prevention
-resource "aws_lambda_permission" "allow_compress_event_trigger" {
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.c7-deleton-lambda-compress.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.c7-schedule-lambda-compress.arn
 }
 
 # Cloudwatch logging for the compress lambda function
@@ -106,7 +87,7 @@ resource "aws_lambda_function" "c7-deleton-lambda-daily-generate" {
   role          = aws_iam_role.lambda-role.arn
   memory_size   = 3010
   timeout       = 120
-  image_uri     = "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deleton-ingestion-script:latest"
+  image_uri     = "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deleton-report-generation:latest"
   package_type  = "Image"
   architectures = ["arm64"]
 
@@ -123,27 +104,6 @@ resource "aws_lambda_function" "c7-deleton-lambda-daily-generate" {
   }
 }
 
-# Create daily generate schedule for lambda function 
-resource "aws_cloudwatch_event_rule" "c7-schedule-lambda-daily-generate" {
-  name                = "c7-schedule-lambda-daily-generate"
-  schedule_expression = "rate(1 day)"
-}
-
-# Create daily-generate schedule target for lambda function 
-resource "aws_cloudwatch_event_target" "c7-schedule-target-daily-generate" {
-  rule = aws_cloudwatch_event_rule.c7-schedule-lambda-daily-generate.name
-  arn  = aws_lambda_function.c7-deleton-lambda-daily-generate.arn
-}
-
-# Create daily-generate trigger prevention
-resource "aws_lambda_permission" "allow_daily-generate_event_trigger" {
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.c7-deleton-lambda-daily-generate.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.c7-schedule-lambda-daily-generate.arn
-}
-
 # Cloudwatch logging for the daily generate lambda function
 resource "aws_cloudwatch_log_group" "c7-deleton-daily-generate-function_log_group" {
   name              = "/aws/lambda${aws_lambda_function.c7-deleton-lambda-daily-generate.function_name}"
@@ -151,6 +111,47 @@ resource "aws_cloudwatch_log_group" "c7-deleton-daily-generate-function_log_grou
   lifecycle {
     prevent_destroy = false
   }
+}
+
+# Create role 
+resource "aws_iam_role" "step_function_execution_role" {
+  name               = "step_function_execution_role"
+  assume_role_policy = <<-EOF
+  {
+    "Statement": [
+      {
+        "Action": "sts:AssumeRole",
+        "Principal": {
+          "Service": ["states.amazonaws.com", "events.amazonaws.com"]
+        },
+        "Effect": "Allow",
+        "Sid": "StepFunctionAssumeRole"
+      }
+    ]
+  }
+  EOF
+}
+
+# Create role policy
+resource "aws_iam_role_policy" "step_function_execution_role_policy" {
+  name = "step_function_execution_role_policy"
+  role = aws_iam_role.step_function_execution_role.id
+
+  policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "states:StartExecution"
+        ],
+        "Resource": "${aws_sfn_state_machine.deleton_state_machine.arn}"
+        
+      }
+    ]
+  }
+  EOF
 }
 
 # Create role and policy for step function to execute lambdas
@@ -221,12 +222,12 @@ EOF
 resource "aws_cloudwatch_event_rule" "step_function_schedule" {
   name                = "deleton-daily-step-function"
   description         = "Run step function at 6 PM everyday"
-  schedule_expression = "cron(0 18 * * ? *)"
+  schedule_expression = "cron(0 17 * * ? *)"
 }
 
 # Create event target for step function
 resource "aws_cloudwatch_event_target" "target" {
   rule     = aws_cloudwatch_event_rule.step_function_schedule.name
   arn      = aws_sfn_state_machine.deleton_state_machine.arn
-  role_arn = aws_iam_role.step_function_role.arn
+  role_arn = aws_iam_role.step_function_execution_role.arn
 }
