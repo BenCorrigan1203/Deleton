@@ -1,8 +1,8 @@
-DROP DATABASE deleton;
+DROP DATABASE deloton;
 
-CREATE DATABASE deleton;
+CREATE DATABASE deloton;
 
-\c deleton
+\c deloton
 
 CREATE SCHEMA daily;
 
