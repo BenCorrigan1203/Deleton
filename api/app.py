@@ -20,16 +20,19 @@ def get_home() -> str:
     '''Return HTML of the home page'''
     return render_template('index.html')
 
-@app.route("/ride/<int:ride_id>/", methods=["GET"])
+@app.route("/ride/<ride_id>/", methods=["GET"])
 def get_rides(ride_id: int) -> dict:
     '''Get a ride using a specific ID'''
     try:
         if request.method == "GET":
-            rides = helper_functions.get_rides(ride_id)
-            if len(rides) == 0:
-                return jsonify({"Ride Information":\
-                                 "Currently no data to show.","success": True}), 200
-            return rides
+            if ride_id.isnumeric():
+                rides = helper_functions.get_rides(ride_id)
+                if len(rides) == 0:
+                    return jsonify({"Ride Information":\
+                                    "Currently no data to show.","success": True}), 200
+                return rides
+    except TypeError:
+        return jsonify({"error": True, "Message": "Incorrect value entered."}), 500
     except ValueError:
         return jsonify({"error": True, "Message": "Incorrect value entered."}), 500
     except Exception:
