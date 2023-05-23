@@ -14,8 +14,8 @@ data "aws_iam_policy_document" "assume_role" {
 
 # Creata lambda IAM role
 resource "aws_iam_role" "lambda-role" {
-  name_prefix = "iam-c7-deleton-for-lambda"
-  #  = "iam-deleton-for-lambda"
+  name_prefix = "iam-c7-deloton-for-lambda"
+  #  = "iam-deloton-for-lambda"
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [{
@@ -29,12 +29,12 @@ resource "aws_iam_role" "lambda-role" {
 }
 
 # Create compress lambda function
-resource "aws_lambda_function" "c7-deleton-lambda-compress" {
-  function_name = "c7-deleton-lambda-compress"
+resource "aws_lambda_function" "c7-deloton-lambda-compress" {
+  function_name = "c7-deloton-lambda-compress"
   role          = aws_iam_role.lambda-role.arn
   memory_size   = 3010
   timeout       = 120
-  image_uri     = "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deleton-compression-script:latest"
+  image_uri     = "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deloton-compression-script:latest"
   package_type  = "Image"
   architectures = ["arm64"]
 
@@ -42,16 +42,16 @@ resource "aws_lambda_function" "c7-deleton-lambda-compress" {
     variables = {
       DB_USER     = "${var.DB_USER}"
       DB_PASSWORD = "${var.DB_PASSWORD}"
-      DB_HOST     = aws_db_instance.deleton-rds.address
-      DB_PORT     = aws_db_instance.deleton-rds.port
+      DB_HOST     = aws_db_instance.deloton-rds.address
+      DB_PORT     = aws_db_instance.deloton-rds.port
 
     }
   }
 }
 
 # Cloudwatch logging for the compress lambda function
-resource "aws_cloudwatch_log_group" "c7-deleton-compress-function_log_group" {
-  name              = "/aws/lambda${aws_lambda_function.c7-deleton-lambda-compress.function_name}"
+resource "aws_cloudwatch_log_group" "c7-deloton-compress-function_log_group" {
+  name              = "/aws/lambda${aws_lambda_function.c7-deloton-lambda-compress.function_name}"
   retention_in_days = 7
   lifecycle {
     prevent_destroy = false
@@ -82,12 +82,12 @@ resource "aws_iam_role_policy_attachment" "function_logging_policy_attachment" {
 }
 
 # Create daily generate lambda function
-resource "aws_lambda_function" "c7-deleton-lambda-daily-generate" {
-  function_name = "c7-deleton-lambda-daily-generate"
+resource "aws_lambda_function" "c7-deloton-lambda-daily-generate" {
+  function_name = "c7-deloton-lambda-daily-generate"
   role          = aws_iam_role.lambda-role.arn
   memory_size   = 3010
   timeout       = 120
-  image_uri     = "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deleton-report-generation:latest"
+  image_uri     = "605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deloton-report-generation:latest"
   package_type  = "Image"
   architectures = ["arm64"]
 
@@ -98,15 +98,15 @@ resource "aws_lambda_function" "c7-deleton-lambda-daily-generate" {
       DB_USER     = "${var.DB_USER}"
       DB_NAME     = "${var.DB_NAME}"
       DB_PASSWORD = "${var.DB_PASSWORD}"
-      DB_HOST     = aws_db_instance.deleton-rds.address
-      DB_PORT     = aws_db_instance.deleton-rds.port
+      DB_HOST     = aws_db_instance.deloton-rds.address
+      DB_PORT     = aws_db_instance.deloton-rds.port
     }
   }
 }
 
 # Cloudwatch logging for the daily generate lambda function
-resource "aws_cloudwatch_log_group" "c7-deleton-daily-generate-function_log_group" {
-  name              = "/aws/lambda${aws_lambda_function.c7-deleton-lambda-daily-generate.function_name}"
+resource "aws_cloudwatch_log_group" "c7-deloton-daily-generate-function_log_group" {
+  name              = "/aws/lambda${aws_lambda_function.c7-deloton-lambda-daily-generate.function_name}"
   retention_in_days = 7
   lifecycle {
     prevent_destroy = false
@@ -146,7 +146,7 @@ resource "aws_iam_role_policy" "step_function_execution_role_policy" {
         "Action": [
           "states:StartExecution"
         ],
-        "Resource": "${aws_sfn_state_machine.deleton_state_machine.arn}"
+        "Resource": "${aws_sfn_state_machine.deloton_state_machine.arn}"
         
       }
     ]
@@ -194,23 +194,23 @@ resource "aws_iam_role_policy" "step_function_policy" {
 }
 
 # Create step-function
-resource "aws_sfn_state_machine" "deleton_state_machine" {
-  name     = "deleton-state-machine"
+resource "aws_sfn_state_machine" "deloton_state_machine" {
+  name     = "deloton-state-machine"
   role_arn = aws_iam_role.step_function_role.arn
 
   definition = <<EOF
 {
-  "Comment": "State machine for the deleton group project",
+  "Comment": "State machine for the deloton group project",
   "StartAt": "Compress Data",
   "States": {
     "Compress Data": {
       "Type": "Task",
-      "Resource": "${aws_lambda_function.c7-deleton-lambda-compress.arn}",
+      "Resource": "${aws_lambda_function.c7-deloton-lambda-compress.arn}",
       "Next": "Generate Report"
     },
     "Generate Report": {
       "Type": "Task",
-      "Resource": "${aws_lambda_function.c7-deleton-lambda-daily-generate.arn}",
+      "Resource": "${aws_lambda_function.c7-deloton-lambda-daily-generate.arn}",
       "End": true
     }
   }
@@ -220,7 +220,7 @@ EOF
 
 # Create schedule for step function
 resource "aws_cloudwatch_event_rule" "step_function_schedule" {
-  name                = "deleton-daily-step-function"
+  name                = "deloton-daily-step-function"
   description         = "Run step function at 6 PM everyday"
   schedule_expression = "cron(0 17 * * ? *)"
 }
@@ -228,6 +228,6 @@ resource "aws_cloudwatch_event_rule" "step_function_schedule" {
 # Create event target for step function
 resource "aws_cloudwatch_event_target" "target" {
   rule     = aws_cloudwatch_event_rule.step_function_schedule.name
-  arn      = aws_sfn_state_machine.deleton_state_machine.arn
+  arn      = aws_sfn_state_machine.deloton_state_machine.arn
   role_arn = aws_iam_role.step_function_execution_role.arn
 }

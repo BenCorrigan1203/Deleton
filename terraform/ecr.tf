@@ -1,6 +1,6 @@
 # Create ECR for live dashbaord
 resource "aws_ecr_repository" "live-dash" {
-  name                 = "c7-deleton-live-dashboard"
+  name                 = "c7-deloton-live-dashboard"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -10,7 +10,7 @@ resource "aws_ecr_repository" "live-dash" {
 
 # Create ECR for compression script
 resource "aws_ecr_repository" "compress" {
-  name                 = "c7-deleton-compression-script"
+  name                 = "c7-deloton-compression-script"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -19,7 +19,7 @@ resource "aws_ecr_repository" "compress" {
 }
 # Create ECR for ingestion script
 resource "aws_ecr_repository" "compress" {
-  name                 = "c7-deleton-ingestion-script"
+  name                 = "c7-deloton-ingestion-script"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -30,7 +30,7 @@ resource "aws_ecr_repository" "compress" {
 
 # Create ECR for report generation script
 resource "aws_ecr_repository" "report" {
-  name                 = "c7-deleton-report-generation"
+  name                 = "c7-deloton-report-generation"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -40,7 +40,7 @@ resource "aws_ecr_repository" "report" {
 
 # Create ECR for API
 resource "aws_ecr_repository" "API" {
-  name                 = "c7-deleton-api"
+  name                 = "c7-deloton-api"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
