@@ -1,0 +1,9 @@
+psycopg2
+flask
+python-dotenv
+pandas
+plotly
+sqlalchemy
+numpy
+python-dotenv
+typing
