@@ -2,96 +2,112 @@
 
 # Deloton 🚴‍♀️🚴‍♂️🚴
 
-Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction of a architecture which collects raw Deleton kafka bike data to be processed for streams of outputs.
+Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction of a architecture which collects raw Deleton kafka bike data to be processed for streams of outputs for visualisation.
 
+- [Usage](#usage--outputs-)📊
+- [Architecture](#architecture-%EF%B8%8F)🏛️
 - [Files](#files-)📁
 - [Installation](#installation-%EF%B8%8F)⬇️
-- [Architecture](#architecture-%EF%B8%8F)🏛️
-- [Usage](#usage--outputs-)📊
 
-## Files 📁
+🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴
 
-### Ingestion
+#
 
-### This folder contains files related to the ingestion for our pipeline, which gathers data from the kafka.
+## Usage / Outputs 📊
 
-- ingestion.py : This file allows us to consume and sort the kafka data, which is then sent to the database for short term storage
-- ingestion_utils.py : This file can be considered as a helper function for the ingestion.py in order to split the raw data
-- ingestion_sql.py : This file holds type definitions with the SQL commands, to reduce the cluttering of the code.
-- requirements.txt : This file contains a list of the required Python packages to run the scripts in this folder.
+### API
 
-### Terraform
+To view and access riders information using our restful API, access the API via link obtained from loadbalancer with the authentication needed for deleting a ride. Below are end-points where you can access different information.
 
-### This folder contains the files related to the creation of all of our AWS services, including RDS. Lambda functions and ECRs.
+- Get Ride information via ride id
 
-- ecr.tf : This file contains the the terraform resource creation for the ECR for each part of the architecture.
-- ecs.tf : This file contains the ECS dependable resources such as the clusters, task definitions and event bridge.
-- lambda.tf : This file contains the resource creation for the lambdas, which will host our python scripts on the cloud. This includes the IAM policy
-- rds.tf : This file contains the resource creation for the RDS database using the referenced security groups and VPC subnets.
-- setup.tf : This file contain resource parameters other services would use like the VPC, VPC subnets and security groups.
-- variables.tf : This file contains variables which are referenced throughout each terraform file, such as database name and port.
+  - With extension "/ride/int:ride_id/", where ride_id is replaced with the ride you're inquiring about. If valid, you will receive rides start time, end time, rider_id, bike serial
 
-### Compress_data
+- Get Riders information via rider id
 
-### This folder contains the files required to transfer the data from the AWS RDS daily schema to the historical schema
+  - With extension "/rider/int:rider_id/", where rider_id is replaced with the rider you're inquiring about. If valid, you will receive riders id, name, gender, address, date of birth, email, height, weight, account creation date.
 
-- compress_data.py : This file extracts all rider information exceeding the past 24 hours from the daily schema, formats it, and uploads the data to the historical schema. Additionally, it deletes data in the daily historical schema that is older than 12 hours.
-- compress_sql.py : This file contains all the SQL commands for the compress_data.py, to allow easier code consumption.
-- requirements.txt : This file contains a list of the required Python packages to run the scripts in this folder.
+- Delete a ride via ride id
 
-### Report_generation
+  - With extension
 
-### This folder contains the files which create the documentation for the C-suite, attached to an email.
+- Get Rides duration via ride id
 
-- report.py : This file uses the daily schema and extracts several graphs and information from the last 24 hours to form a PDF, which is then sent in an email.
-- report_utils.py : This file contains "helper" functions for the report.py to help make the report.py easier to consume.
-- deleton.png : This is a image of the Deleton logo used in the PDF.
-- requirements.txt : This file contains a list of the required Python packages to run the scripts in this folder.
+  - With extension "/rider/int:rider_id/duration/", where rider_id is replaced with the ride you're inquiring about. If valid and has ended, you will receive the rides duration.
 
-### Live_dashboard
+- Get daily rides completed today
 
-### This folder contains the files which create the dashboard using flask, for the riders.
+  - With extension "/daily/", you will be able to see all the rides which are currently occurring or have been completed today.
 
-- dash_utils.py : This file contains the python scripts to contact the database and form the figures needed in the dashboard.
-- sql_vars.py : This file contains the SQL commands used in the dash_utils.py to allow that file to be easier to consume.
-- app.py : this file contains the dash template used by each page, which holds the navigation bar and references to the pages.
-- pages
-  - current_ride.py : This file contains the plotly graphs of the current heart rate, resistance and power graphs.
-  - recent_rides.py : This file contains the plotly graphs of the recent rides and shows the gender split and age groups.
+- Get leaderboard of which rider has completed the most rides
 
-### Database_reset
+  - With extension "/leaderboard/", you will be able to see a leaderboard of all the riders in order of who has completed the most rides.
 
-### This folder contains the files which create the dashboard using flask, for the riders.
+- Get rides in a specific city
 
-- database_reset.py : This file drops all the tables and then creates the tables in both schemas.
-- reset.sql : This file has all the SQL commands needed to drop and create
+  - With extension "/city/<city>", where city is replaced with the city you;re inquiring about. If valid , you will recieve all the rides which have taken place or occurring in the city.
 
-🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️
+##
 
-## Installation ⬇️
+### Dashboard
 
-To run this repo you will need to do the steps below.
+##
 
-NOTE. For the installation process you should have terraform installed, alongside any of it's dependencies.
+To view realtime dashboard for riders at a glance using the this link [LINK]
 
-1.  Within the terraform directory, "terraform_step_one", you would need to run the commands below to create the ecr:
+- Current ride
+  [IMAGE]
 
-    `terraform init`
+  - From entering rider id, you will be able to see you details, including current heart rate, cumulative power and, average power and resistance.
 
-    `terraform apply`
+- Recent rides
+  [IMAGE]
 
-2.  We now need to dockerize the lambda functions which we have written to be pushed to AWS ecr. Therefore, we need to the Ingestion, compress_data, report_generation, live_dashboard and database_reset folders and run the following commandsThis can be done with the commands below.
+  - You will be able to see two graphs which show all the rides in a bar chart, where one is split via age bracket and other is split via gender.
 
-    push dockerized images to ecr then
-    terraform apply again
+### Tableau
+
+To view the live tableau dashboard, please login to our tableau server
+
+<p align="center">
+  <img src="https://imgtr.ee/images/2023/05/22/woHwM.png" alt="Tableau example" width="738">
+</p>
+
+- Above image shows leaderboard of riders which can be filtered on longest individual ride, highest power output and longest cumulative ride time by a rider.
+
+##
+
+##
+
+### Daily report
+
+<p align="center">
+  <img src="https://imgtr.ee/images/2023/05/22/wojKq.png" alt="Daily report example" width="738">
+</p>
+
+- Example of the daily report given to C-suits each day via email, where we see total number of riders and 4 graphs. Graph 1 showing the riders of the past day split by gender, graph 2 showing riders of the past day split by age brackets, graph 3 showing average heart rates of riders during the day, and the last graph showing average power of riders during the day.
+
+🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴
+
+#
 
 ## Architecture 🏛️
 
 ### Diagram illustrating the projects architecture
 
+##
+
+##
+
 ![plot](./Readme/architecture-diagram.png)
 
+##
+
+##
+
 ### Extract
+
+##
 
 1. Kafka
 
@@ -103,11 +119,15 @@ NOTE. For the installation process you should have terraform installed, alongsid
 
 ### Load
 
+##
+
 4. RDS, database
 
 - This section of the pipeline is where we load the data which has been cleaned and checked. The initial data from the ingestion script, would be loaded into our daily schema of the database. There is also a historical schema for data greater than 12 hours in age.
 
 ### Transform
+
+##
 
 4. Step-function
    4.1. Compress data script
@@ -118,6 +138,8 @@ NOTE. For the installation process you should have terraform installed, alongsid
 - This section takes the data from the historical schema and generates a PDF of key graphs for the C-suit executives.
 
 ### Output
+
+##
 
 1. Alerts
 
@@ -135,67 +157,131 @@ NOTE. For the installation process you should have terraform installed, alongsid
 
 - This section provides some analyses for Data Analysts, key information on historical rides which have taken place.
 
-![Biking](https://tenor.com/bBo2Z.gif)
+![Biking](https://media.tenor.com/bTDIPxWB1kMAAAAi/moving-man.gif)![Biking](https://media.tenor.com/bTDIPxWB1kMAAAAi/moving-man.gif)![Biking](https://media.tenor.com/bTDIPxWB1kMAAAAi/moving-man.gif)ZOOM
 
-## Usage / outputs 📊
+#
+
+## Files 📁
+
+### Ingestion
+
+#### This folder contains files related to the ingestion for our pipeline, which gathers data from the kafka.
+
+##
+
+- `ingestion.py` : This file allows us to consume and sort the kafka data, which is then sent to the database for short term storage
+
+- `ingestion_utils.py` : This file can be considered as a helper function for the ingestion.py in order to split the raw data
+
+- `ingestion_sql.py` : This file holds type definitions with the SQL commands, to reduce the cluttering of the code.
+
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
+
+- `test_ingestion.py` : This file contains pytest scripts to tests aspects of the ingestion.py, to make sure it is functioning.
+
+- `requirements.txt` : This file contains a list of the required Python packages to run the scripts in this folder.
+
+### Terraform
+
+#### This folder contains the files related to the creation of all of our AWS services, including RDS. Lambda functions and ECRs.
+
+##
+
+- `ecr.tf` : This file contains the the terraform resource creation for the ECR for each part of the architecture.
+
+- `ecs.tf` : This file contains the ECS dependable resources such as the clusters, task definitions and event bridge.
+
+- `main.tf` : This file contains the resource creation for the lambdas and step function, which will host our python scripts on the cloud. This includes the IAM policy as well.
+
+- `rds.tf` : This file contains the resource creation for the RDS database using the referenced security groups and VPC subnets.
+
+- `setup.tf` : This file contain resource parameters other services would use like the VPC, VPC subnets and security groups.
+
+- `variables.tf` : This file contains variables which are referenced throughout each terraform file, such as database name and port.
+
+- `create_db.sql` : This file contains the sql script to create the database and the tables in each schema.
+
+### Compress_data
+
+#### This folder contains the files required to transfer the data from the AWS RDS daily schema to the historical schema
+
+##
+
+- `compress_data.py` : This file extracts all rider information exceeding the past 24 hours from the daily schema, formats it, and uploads the data to the historical schema. Additionally, it deletes data in the daily historical schema that is older than 12 hours.
+
+- `compress_sql.py` : This file contains all the SQL commands for the compress_data.py, to allow easier code consumption.
+
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
+
+- `requirements.txt` : This file contains a list of the required Python packages to run the scripts in this folder.
+
+### Report_generation
+
+#### This folder contains the files which create the documentation for the C-suite, attached to an email.
+
+##
+
+- `report.py` : This file uses the daily schema and extracts several graphs and information from the last 24 hours to form a PDF, which is then sent in an email.
+
+- `report_utils.py` : This file contains "helper" functions for the report.py to help make the report.py easier to consume.
+
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
+
+- `deleton.png` : This is a image of the Deleton logo used in the PDF.
+
+- `requirements.txt` : This file contains a list of the required Python packages to run the scripts in this folder.
+
+### Live_dashboard
+
+#### This folder contains the files which create the dashboard using flask, for the riders.
+
+##
+
+- `dash_utils.py` : This file contains the python scripts to contact the database and form the figures needed in the dashboard.
+
+- `sql_vars.py` : This file contains the SQL commands used in the dash_utils.py to allow that file to be easier to consume.
+
+- `app.py `: this file contains the dash template used by each page, which holds the navigation bar and references to the pages.
+
+- pages
+
+  - `current_ride.py `: This file contains the plotly graphs of the current heart rate, resistance and power graphs.
+
+  - `recent_rides.py` : This file contains the plotly graphs of the recent rides and shows the gender split and age groups.
+
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
+
+- `requirements.txt` : This file contains a list of the required Python packages to run the scripts in this folder.
 
 ### API
 
-To view and access riders information using our restful API, access the API via link [LINK] with the authentication [AUTHENTICATION]. Below are end-points where you can access different information.
+#### This folder contains the files which create the restful API to access rider information.
 
-- Get Ride information via ride id
+##
 
-  - With extension "/ride/<int:ride_id>/", where ride_id is replaced with the ride you're inquiring about. If valid, you will receive rides start time, end time, rider_id, bike serial
+- `app.py` : This file contains all the functions for each end point accessible through the api.
 
-- Get Riders information via rider id
+- `helper_function.py` : This file has functions used by the `app.py` for set-up and to allow the `app.py` to be more consumable.
 
-  - With extension "/rider/<int:rider_id>/", where rider_id is replaced with the rider you're inquiring about. If valid, you will receive riders id, name, gender, address, date of birth, email, height, weight, account creation date.
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
 
-- Delete a ride via ride id
+- `requirements.txt` : This file contains a list of the required Python packages to run the scripts in this folder.
 
-  - With extension
+🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴
 
-- Get Rides duration via ride id
+#
 
-  - With extension "/rider/<int:rider_id>/duration/", where rider_id is replaced with the ride you're inquiring about. If valid and has ended, you will receive the rides duration.
+## Installation ⬇️
 
-- Get daily rides completed today
+To run this repo you will need to do the steps below.
 
-  - With extension "/daily/", you will be able to see all the rides which are currently occurring or have been completed today.
+NOTE. For the installation process you should have terraform installed, add environment variables in /terraform/variables.tf and adjust deloton.sh with docker terminal lines with AWS account name. Alongside with any for terraform dependencies.
 
-- Get leaderboard of which rider has completed the most rides
+- run `deloton.sh` in terminal
 
-  - With extension "/leaderboard/", you will be able to see a leaderboard of all the riders in order of who has completed the most rides.
-
-- Get rides in a specific city
-
-  - With extension "/city/<city>", where city is replaced with the city you;re inquiring about. If valid , you will recieve all the rides which have taken place or occurring in the city.
-
-### Dashboard
-
-To view realtime dashboard for riders at a glance using the this link [LINK]
-
-- Current ride
-  [IMAGE]
-
-  - From entering rider id, you will be able to see you details, including current heart rate, cumulative power and, average power and resistance.
-
-- Recent rides
-  [IMAGE]
-
-  - You will be able to see two graphs which show all the rides in a bar chart, where one is split via age bracket and other is split via gender.
-
-### Tableau
-
-To view the live tableau dashboard, please login to our tableau server
-[LEADERBOARD_IMAGE]
-
-- Above image shows leaderboard of riders which can be filtered on longest individual ride, highest power output and longest cumulative ride time by a rider.
-
-### Daily report
-
-[IMAGE_OF_PDF]
-
-- Example of the daily report given to C-suits each day via email, where we see total number of riders and 4 graphs. Graph 1 showing the riders of the past day split by gender, graph 2 showing riders of the past day split by age brackets, graph 3 showing average heart rates of riders during the day, and the last graph showing average power of riders during the day.
+- once complete you should receive the following terminal line
+  `Apply complete! Resources: 37 added, 0 changed, 0 destroyed.`. All outputs should now be up and running.
 
 🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️
+
+#
