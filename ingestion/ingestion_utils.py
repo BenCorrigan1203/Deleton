@@ -127,5 +127,10 @@ def process_ride_message(decoded_ride_message: dict):
 def process_telemetry_message(decoded_ride_message: dict):
     """Processes the message received from the kafka stream is the message is a
     TELEMETRY message, returning the heart_rate, rpm and power"""
-    telemetry_data_string = decoded_ride_message.split(TELEMETRY_SPLIT, 1)[1]
-    return create_dict_from_string(telemetry_data_string)
+    relevant_info = decoded_ride_message.split(TELEMETRY_SPLIT, 1)
+    recording_time = relevant_info[0]
+    telemetry_data_string = relevant_info[1]
+
+    telemetry_data = create_dict_from_string(telemetry_data_string)
+    telemetry_data['recording_time'] = recording_time
+    return telemetry_data

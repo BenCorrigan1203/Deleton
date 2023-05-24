@@ -10,11 +10,11 @@ from compress_sql import ADDRESS_SQL, RIDER_SQL, METADATA_SQL, RESISTANCE_SQL, P
 def get_db_connection(config: dict=os.environ) -> connection:
     """establishes connection to database"""
     try:
-        connection = psycopg2.connect(user = config["DATABASE_USERNAME"], \
-                                      host = config["DATABASE_IP"], \
-                                      database = config["DATABASE_NAME"],\
-                                      password = config["DATABASE_PASSWORD"],\
-                                      port = config["DATABASE_PORT"])
+        connection = psycopg2.connect(user = config["DB_USER"], \
+                                      host = config["DB_HOST"], \
+                                      database = config["DB_NAME"],\
+                                      password = config["DB_PASSWORD"],\
+                                      port = config["DB_PORT"])
         return connection
     except Exception as err:
         print("Error connecting to database.")
@@ -96,7 +96,7 @@ def delete_12_hours(conn: connection):
     conn.commit()
     cur.close()
 
-if __name__ == "__main__": 
+def handler(event, context): 
     load_dotenv()
     conn = get_db_connection(os.environ)
     insert_rider_and_address(conn)
