@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+li {
+    font-size: smaller;
+    list-style: none;   
+}
+label {
+    background-color: antiquewhite;
+    padding: 0.2rem;
+    border: 0.1rem solid antiquewhite;
+    color: #333333;
+}
+.endpoints {
+    font-size:x-large;
+    color: antiquewhite;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.logo {
+    display: flex;
+    justify-content: center;
+}
+</style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="background-color: hsl(0, 0%, 20%);">
+    <div class="logo">
+    <img src={{url_for('static', filename="/logo.png")}} width="50%" />
+</div>
+<div class="endpoints">
+    <div class="info">
+        <div>
+            <li>Get a ride with a specific ID</li>
+        </div>
+        <label>/ride/:id</label> 
+    </div>
+<br />
+    <div class="info">
+        <div>    
+            <li>Get rider information </li>
+        </div>
+        <label>/rider/:user_id</label>
+    </div>
+<br />
+    <div class="info">
+        <div>
+            <li>Get all rides for a rider with a specific ID</li>
+        </div>
+        <label>/rider/:user_id/rides</label>
+    </div>
+<br />
+    <div class="info">
+        <div>
+            <li>Delete a with a specific ID</li>
+        </div>
+        <label>/ride/:id</label>
+    </div class="info">
+<br/>
+    <div class="info">
+        <div>
+            <li>Get all of the rides in the current day</li>
+        </div>
+        <label>/daily</label>
+    </div>
+<br />
+    <div class="info">
+        <div>
+            <li>Get all rides for a specific date</li>
+        </div>
+        <label>/daily?date=dd-mm-yyyy</label>
+    </div>
+<br />
+    <div class="info">
+        <div>
+            <li>Get a leaderboard of most rides by riders</li>
+        </div>
+        <label>/leaderboard</label>
+    </div>
+<br />
+<div class="info">
+    <div>
+        <li>Get a rides in a specified city</li>
+    </div>
+    <label>/city</label>
+</div>
+<br />
+<div class="info">
+    <div>
+        <li>Get all rides for a rider with a specific ID</li>
+    </div>
+    <label>/rider/rider_id/duration</label>
+</div>
+    
+</div>
+</body>
+</html>

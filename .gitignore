@@ -159,7 +159,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 transfer/tmp
-terraform*
+*.tfstate
+*.tfstate.backup
 terraform.tfvars
 
 .terraform*
@@ -169,3 +170,7 @@ venv/
 __pycache__
 variables.tf
 .terraform*
+build.sh
+run.sh
+test.sh
+
