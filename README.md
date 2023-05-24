@@ -29,7 +29,7 @@ To view and access riders information using our restful API, access the API via 
 
 - Delete a ride via ride id
 
-  - With extension
+  - With extension "/ride/id", where id is the replace with the ride id you're trying to delete. NOTE authentication is required to delete the ride.
 
 - Get Rides duration via ride id
 
