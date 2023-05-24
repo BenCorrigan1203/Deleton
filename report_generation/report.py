@@ -188,8 +188,8 @@ def email_send() -> None:
     sws_key = os.environ["SECRET_KEY"]
     subject = 'Sending email with Attachment '
     body = "Dear Sir/Madam,\
-        \n\nPlease find our daily report file attached in the form of a PDF File.\
-        \n\nKind regards,\n\nDeloton Team"
+    \n\nPlease find our daily report file attached in the form of a PDF File.\
+    \n\nKind regards,\n\nDeloton Team"
     client = boto3.client(service_name = 'ses', region_name = region,\
                           aws_access_key_id = sws_user, aws_secret_access_key = sws_key)
 
