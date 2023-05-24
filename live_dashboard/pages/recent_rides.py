@@ -34,29 +34,27 @@ layout = html.Div(id="main", children=[
         html.H1(style = {'textAlign': 'left', 'verticalAlign': 'middle', 'marginBottom': '2rem'}, children="Recent Rides"),
 
         html.Div(style=DIV_STYLE, children=[
-            html.H2(id="total_power_title", children="Cumulative Power (Watts)"),
+            html.H2(id="total_power_title", children="Cumulative Power"),
         ]),
 
         html.Div(style=DIV_STYLE, children=[
-            html.H2(id="avg_power_title", children="Average Power (Watts)"),
+            html.H2(id="avg_power_title", children="Average Power"),
         ]),
 
          html.Div(style=DIV_STYLE, children=[
             html.H2(id="avg_resistance_title", children="Average Resistance"),
         ]),
 
-        html.Hr(style={'border': '1px solid black', 'width': '90%'}),
-
         html.Div(style=DIV_STYLE, children=[
-            html.H2(id="total_power", children=""),
+            html.H2(id="total_power", children="", style={"font-size": "25px"}),
         ]),
 
         html.Div(style=DIV_STYLE, children=[
-            html.H2(id="avg_power", children=""),
+            html.H2(id="avg_power", children="", style={"font-size": "25px"}),
         ]),
 
          html.Div(style=DIV_STYLE, children=[
-            html.H2(id="avg_resistance", children=""),
+            html.H2(id="avg_resistance", children="", style={"font-size": "25px"}),
         ]),
     ]),
 
@@ -85,7 +83,7 @@ layout = html.Div(id="main", children=[
           Input('interval-component', 'n_intervals'))
 def update_metrics(n):
     metrics_dict = metrics(engine)
-    return metrics_dict["total_power"], metrics_dict["avg_power"], metrics_dict["avg_resistance"]
+    return f'{metrics_dict["total_power"]} Watts', f'{metrics_dict["avg_power"]} W/s', f'{metrics_dict["avg_resistance"]} N'
 
 
 @callback(Output('gender_graph', 'figure'),

@@ -163,7 +163,7 @@ def group_age_data(recent_rides_df: pd.DataFrame)-> pd.DataFrame:
     bins = [10, 20, 30, 40, 50, 60, 70, 105]
     labels = ['10-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71+']
     age_groups = pd.cut(recent_rides_df['age'], bins=bins, labels=labels, right=True)
-    age_group_count = recent_rides_df.groupby([age_groups])['start_time'].count().reset_index(name='count')
+    age_group_count = recent_rides_df.groupby([age_groups, 'gender'])['start_time'].count().reset_index(name='count')
     return age_group_count
 
 
@@ -203,11 +203,8 @@ def age_graph(engine: engine) -> Figure:
     age_grouped_rides = group_age_data(data)
 
     graph = px.bar(age_grouped_rides, x="age", y="count",
-                   labels={'age': 'Age', 'count': 'Ride Count'})
+                   labels={'age': 'Age', 'count': 'Ride Count'}, color = 'gender', color_discrete_sequence = ['#333333', '#7FC37E'])
     
-    colours = ['#333333', '#7FC37E']
-    graph.data[0].marker.color = [colours[i % len(colours)] for i in range(len(graph.data[0].y))]
-
     graph.update_layout(
         title = {
          'text': "Rides per Age Group",
