@@ -4,10 +4,12 @@
 
 Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction of a architecture which collects raw Deleton kafka bike data to be processed for streams of outputs for visualisation.
 
+- [Usage](#usage--outputs-)📊
+- [Architecture](#architecture-%EF%B8%8F)🏛️
 - [Files](#files-)📁
 - [Installation](#installation-%EF%B8%8F)⬇️
-- [Architecture](#architecture-%EF%B8%8F)🏛️
-- [Usage](#usage--outputs-)📊
+
+🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴
 
 #
 
@@ -15,7 +17,7 @@ Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction o
 
 ### API
 
-To view and access riders information using our restful API, access the API via link [LINK] with the authentication [AUTHENTICATION] needed for deleting a ride. Below are end-points where you can access different information.
+To view and access riders information using our restful API, access the API via link obtained from loadbalancer with the authentication needed for deleting a ride. Below are end-points where you can access different information.
 
 - Get Ride information via ride id
 
@@ -84,6 +86,8 @@ To view the live tableau dashboard, please login to our tableau server
 </p>
 
 - Example of the daily report given to C-suits each day via email, where we see total number of riders and 4 graphs. Graph 1 showing the riders of the past day split by gender, graph 2 showing riders of the past day split by age brackets, graph 3 showing average heart rates of riders during the day, and the last graph showing average power of riders during the day.
+
+🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴
 
 #
 
@@ -171,6 +175,10 @@ To view the live tableau dashboard, please login to our tableau server
 
 - `ingestion_sql.py` : This file holds type definitions with the SQL commands, to reduce the cluttering of the code.
 
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
+
+- `test_ingestion.py` : This file contains pytest scripts to tests aspects of the ingestion.py, to make sure it is functioning.
+
 - `requirements.txt` : This file contains a list of the required Python packages to run the scripts in this folder.
 
 ### Terraform
@@ -183,13 +191,15 @@ To view the live tableau dashboard, please login to our tableau server
 
 - `ecs.tf` : This file contains the ECS dependable resources such as the clusters, task definitions and event bridge.
 
-- `lambda.tf` : This file contains the resource creation for the lambdas, which will host our python scripts on the cloud. This includes the IAM policy
+- `main.tf` : This file contains the resource creation for the lambdas and step function, which will host our python scripts on the cloud. This includes the IAM policy as well.
 
 - `rds.tf` : This file contains the resource creation for the RDS database using the referenced security groups and VPC subnets.
 
 - `setup.tf` : This file contain resource parameters other services would use like the VPC, VPC subnets and security groups.
 
 - `variables.tf` : This file contains variables which are referenced throughout each terraform file, such as database name and port.
+
+- `create_db.sql` : This file contains the sql script to create the database and the tables in each schema.
 
 ### Compress_data
 
@@ -200,6 +210,8 @@ To view the live tableau dashboard, please login to our tableau server
 - `compress_data.py` : This file extracts all rider information exceeding the past 24 hours from the daily schema, formats it, and uploads the data to the historical schema. Additionally, it deletes data in the daily historical schema that is older than 12 hours.
 
 - `compress_sql.py` : This file contains all the SQL commands for the compress_data.py, to allow easier code consumption.
+
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
 
 - `requirements.txt` : This file contains a list of the required Python packages to run the scripts in this folder.
 
@@ -212,6 +224,8 @@ To view the live tableau dashboard, please login to our tableau server
 - `report.py` : This file uses the daily schema and extracts several graphs and information from the last 24 hours to form a PDF, which is then sent in an email.
 
 - `report_utils.py` : This file contains "helper" functions for the report.py to help make the report.py easier to consume.
+
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
 
 - `deleton.png` : This is a image of the Deleton logo used in the PDF.
 
@@ -235,17 +249,25 @@ To view the live tableau dashboard, please login to our tableau server
 
   - `recent_rides.py` : This file contains the plotly graphs of the recent rides and shows the gender split and age groups.
 
-### Database_reset
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
 
-#### This folder contains the files which create the dashboard using flask, for the riders.
+- `requirements.txt` : This file contains a list of the required Python packages to run the scripts in this folder.
+
+### API
+
+#### This folder contains the files which create the restful API to access rider information.
 
 ##
 
-- database_reset.py : This file drops all the tables and then creates the tables in both schemas.
+- `app.py` : This file contains all the functions for each end point accessible through the api.
 
-- reset.sql : This file has all the SQL commands needed to drop and create
+- `helper_function.py` : This file has functions used by the `app.py` for set-up and to allow the `app.py` to be more consumable.
 
-🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️
+- `Dockerfile` : This file allows us to containerize this folder to be than run on any machine with only its dependencies.
+
+- `requirements.txt` : This file contains a list of the required Python packages to run the scripts in this folder.
+
+🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴
 
 #
 
@@ -253,19 +275,13 @@ To view the live tableau dashboard, please login to our tableau server
 
 To run this repo you will need to do the steps below.
 
-NOTE. For the installation process you should have terraform installed, alongside any of it's dependencies.
+NOTE. For the installation process you should have terraform installed, add environment variables in /terraform/variables.tf and adjust deloton.sh with docker terminal lines with AWS account name. Alongside with any for terraform dependencies.
 
-1.  Within the terraform directory, "terraform_step_one", you would need to run the commands below to create the ecr:
+- run `deloton.sh` in terminal
 
-    `terraform init`
+- once complete you should receive the following terminal line
+  `Apply complete! Resources: 37 added, 0 changed, 0 destroyed.`. All outputs should now be up and running.
 
-    `terraform apply`
-
-2.  We now need to dockerize the lambda functions which we have written to be pushed to AWS ecr. Therefore, we need to the Ingestion, compress_data, report_generation, live_dashboard and database_reset folders and run the following commandsThis can be done with the commands below.
-
-        push dockerized images to ecr then
-        terraform apply again
-
-    🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️
+🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️🚴🚵‍♀️🚴🏿‍♀️🚴🏽🚵‍♂️🚴🏻🚵🏿‍♀️🚴‍♀️🚴‍♂️
 
 #
