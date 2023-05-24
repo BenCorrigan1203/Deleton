@@ -1,3 +1,5 @@
+"""Utility file for the kafka stream ingestion file to pull from,
+mainly composed of functions to processed/clean messages"""
 import re
 import math
 import json
@@ -95,7 +97,8 @@ def process_rider_info(decoded_system_message: dict) -> dict:
 
     rider_age = get_rider_age(personal_info['date_of_birth'], start_time)
 
-    return {"rider_info": rider_info, "address_info": address, "ride_info": ride_info, "rider_age": rider_age}
+    return {"rider_info": rider_info, "address_info": address,
+            "ride_info": ride_info, "rider_age": rider_age}
 
 
 def create_dict_from_string(message: str) -> dict:
