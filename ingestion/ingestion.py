@@ -1,14 +1,14 @@
+"""Main script for the kafka ingestion part of the Deloton case study"""
 import os
-import json
 
 from confluent_kafka import Consumer
 from dotenv import load_dotenv
 import psycopg2
-from psycopg2.extras import execute_values
 from psycopg2.extensions import connection
 import boto3
 
-from ingestion_utils import decode_message, process_rider_info, process_ride_message, process_telemetry_message
+from ingestion_utils import decode_message, process_rider_info,\
+    process_ride_message, process_telemetry_message
 from ingestion_sql import ADDRESS_SQL, RIDER_SQL, RIDE_SQL, METADATA_SQL, END_RIDE_SQL
 
 def get_db_connection():
@@ -110,19 +110,23 @@ def add_ride_end_time_to_db(conn: connection, end_time: str, ride_id: int) -> No
         conn.commit()
 
 
-def assess_heart_rate(current_heart_rate: int, max_heart_rate: int, alert_sent_status: bool) -> bool:
+def assess_heart_rate(current_heart_rate: int, max_heart_rate: int,
+                      alert_sent_status: bool) -> bool:
     """Assesses the current heart_rate of te rider and sends an alert to them via email if their
     heart rate is too high"""
-    if current_heart_rate > max_heart_rate - 10 and alert_sent_status == False:
+    if current_heart_rate > max_heart_rate - 10 and alert_sent_status is False:
         message = {"Subject": {"Data": "Heart Rate Alert"},
-                    "Body": {"Text": {"Data": f"This is an automated alert from your Deleton tracker. At your current \
+                    "Body": {"Text": {"Data": f"This is an automated alert from your \
+Deleton tracker. At your current \
 age, the maximum safe heart rate is {max_heart_rate} bpm. You have reached \
 {current_heart_rate}. Please exercise with caution and remain safe."}}}
-        ses.send_email(Source="trainee.mohammed.simjee@sigmalabs.co.uk", Destination=email_recipients, Message=message)
+        ses.send_email(Source="trainee.mohammed.simjee@sigmalabs.co.uk",
+                       Destination=email_recipients, Message=message)
         return True
-            
 
-def process_message(conn: connection, message: str, ride_id: int, last_log: str, last_log_info: dict,
+
+def process_message(conn: connection, message: str, ride_id: int,
+                    last_log: str, last_log_info: dict,
                     max_heart_rate: int, current_ride_alert_status: bool) -> dict:
     """Processes the messages differently depending on the key words found in the message
     string, returning a consistent dictionary of information that is to be passed into the next
@@ -142,10 +146,11 @@ def process_message(conn: connection, message: str, ride_id: int, last_log: str,
         ride_info = process_ride_message(message)
         return {"current_ride_id": ride_id, "last_log": "ride", "last_log_info": ride_info,
                 "max_heart_rate": max_heart_rate, "alert_status": current_ride_alert_status}
-    
+
     elif '[INFO]' in message and 'Telemetry' in message and ride_id != -1:
         telemetry_info = process_telemetry_message(message)
-        alert_sent = assess_heart_rate(telemetry_info['hrt'], max_heart_rate, current_ride_alert_status) 
+        alert_sent = assess_heart_rate(telemetry_info['hrt'],
+                                       max_heart_rate, current_ride_alert_status)
         try:
             if last_log == 'ride':
                 log_to_input = [
@@ -160,11 +165,12 @@ def process_message(conn: connection, message: str, ride_id: int, last_log: str,
         except KeyError as err:
             print("Log missing a key, skipping to next data entry", err)
             return None
-        
+
         add_metadata_to_database(conn, log_to_input)
-        return {"current_ride_id": ride_id, "last_log": "telemetry", "last_log_info": telemetry_info,
-                "max_heart_rate": max_heart_rate, "alert_status": alert_sent}
-    
+        return {"current_ride_id": ride_id, "last_log": "telemetry",
+                "last_log_info": telemetry_info, "max_heart_rate": max_heart_rate,
+                "alert_status": alert_sent}
+
     elif "beginning of main" in message and ride_id != -1:
         add_ride_end_time_to_db(conn, last_log_info['recording_time'], ride_id)
         return {"current_ride_id": -1, "last_log": "ending", "last_log_info": None,
@@ -192,9 +198,10 @@ def consume_messages(conn: connection, consumer: Consumer, topic: str) -> None:
             if message is None:
                 continue
             if message.error():
-                raise Exception(message.error())
+                raise ValueError(message.error())
             decoded_message = decode_message(message)
-            processed_data = process_message(conn, decoded_message, ride_id, last_log, last_log_info,
+            processed_data = process_message(conn, decoded_message, ride_id,
+                                             last_log, last_log_info,
                                              max_heart_rate, alert_sent_status)
 
             if processed_data:
@@ -207,14 +214,14 @@ def consume_messages(conn: connection, consumer: Consumer, topic: str) -> None:
         print(err)
         print("Error in Consumer, rebooting...")
         return consume_messages(conn, consumer, os.environ['TOPIC'])
-    finally: 
-        consumer.close()    
+    finally:
+        consumer.close()
         print("Consumer Closing")
 
 
 if __name__ == "__main__":
     load_dotenv()
-    conn = get_db_connection()
+    db_conn = get_db_connection()
 
     kafka_config = {
         'bootstrap.servers':os.environ['BOOTSTRAP_SERVERS'],
@@ -226,10 +233,12 @@ if __name__ == "__main__":
         'auto.offset.reset': 'latest'
     }
 
-    session = boto3.Session(aws_access_key_id=os.environ["ACCESS_KEY"], aws_secret_access_key=os.environ["SECRET_KEY"])
+    session = boto3.Session(aws_access_key_id=os.environ["ACCESS_KEY"],
+                            aws_secret_access_key=os.environ["SECRET_KEY"])
     ses = session.client("ses", region_name='eu-west-2')
-    email_recipients = {"ToAddresses": ["trainee.ben.corrigan@sigmalabs.co.uk"], "CcAddresses": [], "BccAddresses": []}
+    email_recipients = {"ToAddresses": ["trainee.ben.corrigan@sigmalabs.co.uk"],
+                        "CcAddresses": [], "BccAddresses": []}
 
-    consumer = Consumer(kafka_config)
+    kafka_consumer = Consumer(kafka_config)
 
-    consume_messages(conn, consumer, os.environ['TOPIC'])
+    consume_messages(db_conn, kafka_consumer, os.environ['TOPIC'])
