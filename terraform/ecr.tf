@@ -18,7 +18,7 @@ resource "aws_ecr_repository" "compress" {
   }
 }
 # Create ECR for ingestion script
-resource "aws_ecr_repository" "compress" {
+resource "aws_ecr_repository" "ingestion" {
   name                 = "c7-deloton-ingestion-script"
   image_tag_mutability = "MUTABLE"
 

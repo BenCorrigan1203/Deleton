@@ -1,16 +1,18 @@
 # This script will create the neccassary AWS resources and deploy the relevant docker images.
 cd terraform
 
+# Destroy all running resources 
+terraform destroy -auto-approve
 # Initialise Terraform
 terraform init 
 
 # Create the ECR repositories.  
-terraform plan -target=aws_ecr_repository.live-dash -target=aws_ecr_repository.compress -target=aws_ecr_repository.compress -target=aws_ecr_repository.API
-terraform apply -target=aws_ecr_repository.live-dash -target=aws_ecr_repository.compress -target=aws_ecr_repository.compress -target=aws_ecr_repository.API
+terraform plan -target=aws_ecr_repository.live-dash -target=aws_ecr_repository.compress -target=aws_ecr_repository.report -target=aws_ecr_repository.API -target=aws_ecr_repository.ingestion
+terraform apply -target=aws_ecr_repository.live-dash -target=aws_ecr_repository.compress -target=aws_ecr_repository.report -target=aws_ecr_repository.API -target=aws_ecr_repository.ingestion -auto-approve
 
 # Create the RDS
 terraform plan -target=aws_db_instance.deloton-rds
-terraform apply -target=aws_db_instance.deloton-rds
+terraform apply -target=aws_db_instance.deloton-rds -auto-approve
 
 # Login into AWS
 aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 605126261673.dkr.ecr.eu-west-2.amazonaws.com
@@ -63,4 +65,4 @@ docker push 605126261673.dkr.ecr.eu-west-2.amazonaws.com/c7-deloton-report-gener
 cd ../terraform
 # Create Lambda and Step functions, ECS cluster, Task Definition and Services with Load Balancers. 
 terraform plan
-terraform apply
+terraform apply -auto-approve
