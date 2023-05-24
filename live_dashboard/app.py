@@ -23,7 +23,7 @@ CONTENT_STYLE = {
 
 sidebar = html.Div(
     [
-        html.H2("Pages", className="display-4", style={"color": "#7fc37e"}),
+        html.H1("Dashboard", style={"color": "#7fc37e", "font-size": "45px"}),
         html.Hr(),
         dbc.Nav(
             [

@@ -93,7 +93,7 @@ layout = html.Div(id="main", children=[
 def update_metrics(n):
     data = get_current_rider_data(engine)
     return f"{data['name']}", f"{data['gender']}",\
-          f"{data['age']}", f"{data['duration']} Secs",\
+          f"{data['age']} Yrs", f"{data['duration']} Secs",\
           f"{data['heart_rate']} BPM", f"{data['heart_safety']}", {"color": heart_rate_status_colour(data['heart_safety'])}
 
 
