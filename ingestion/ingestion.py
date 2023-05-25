@@ -124,7 +124,7 @@ age, the maximum safe heart rate is {max_heart_rate} bpm. You have reached \
         ses.send_email(Source="trainee.mohammed.simjee@sigmalabs.co.uk",
                        Destination=email_recipients, Message=message)
         return True
-
+    return alert_sent_status
 
 def process_message(conn: connection, message: str, ride_id: int,
                     last_log: str, last_log_info: dict,
@@ -150,8 +150,10 @@ def process_message(conn: connection, message: str, ride_id: int,
 
     elif '[INFO]' in message and 'Telemetry' in message and ride_id != -1:
         telemetry_info = process_telemetry_message(message)
-        alert_sent = assess_heart_rate(telemetry_info['hrt'],
-                                       max_heart_rate, current_ride_alert_status)
+
+        alert_sent = assess_heart_rate(telemetry_info['hrt'], max_heart_rate,
+                                       current_ride_alert_status)
+
         try:
             if last_log == 'ride':
                 log_to_input = [
