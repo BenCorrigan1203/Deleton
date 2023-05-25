@@ -4,7 +4,7 @@ from dash_utils import get_db_connection, age_graph, gender_graph, metrics
 from dotenv import load_dotenv
 
 
-dash.register_page(__name__, path="/recent_rides")
+dash.register_page(__name__, path="/recent_rides", name="Recent Rides")
 load_dotenv()
 engine = get_db_connection()
 
@@ -12,7 +12,7 @@ engine = get_db_connection()
 
 DIV_STYLE = {
     'display': 'inline-block',
-    'width': '30%',  # Divide the available width evenly among the six divs
+    'width': '30%',
     'textAlign': 'left',
     'verticalAlign': 'middle',
 }

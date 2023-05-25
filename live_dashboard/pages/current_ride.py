@@ -4,7 +4,7 @@ from dash_utils import get_db_connection, get_current_rider_data, heart_rate_sta
 from dotenv import load_dotenv
 
 
-dash.register_page(__name__, path="/")
+dash.register_page(__name__, path="/", name="Current Ride")
 load_dotenv()
 engine = get_db_connection()
 
@@ -12,7 +12,7 @@ engine = get_db_connection()
 
 DIV_STYLE = {
     'display': 'inline-block',
-    'width': '30%',  # Divide the available width evenly among the six divs
+    'width': '30%',
     'textAlign': 'left',
     'verticalAlign': 'middle',
 }
@@ -45,7 +45,7 @@ layout = html.Div(id="main", children=[
             html.H2(id="current_rider_age", children=""),
         ]),
 
-        html.Hr(style={'border': '1px solid black', 'width': '80%'}),
+        html.Hr(style={'border': '1px solid black'}),
 
         html.Div(style=DIV_STYLE, children=[
             html.H2(id="current_ride_duration", children=""),
