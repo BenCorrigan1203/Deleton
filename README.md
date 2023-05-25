@@ -4,6 +4,9 @@
 
 Repository for SigmaLabsXYZ Deleton project. This Repo allows the construction of a architecture which collects raw Deleton kafka bike data to be processed for streams of outputs for visualisation.
 
+Project contributors:
+Abdirrahman Mohamed, Ben Corrigan, Danishan Rahulan, Zaakir Simjee
+
 - [Usage](#usage--outputs-)📊
 - [Architecture](#architecture-%EF%B8%8F)🏛️
 - [Files](#files-)📁
