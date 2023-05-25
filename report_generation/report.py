@@ -237,6 +237,3 @@ def handler(event, context):
     convert_html_to_pdf(report_html, PDF_FILE_PATH)
     print("sending email")
     email_send()
-
-if __name__ == "__main__":
-    handler("wa","wa")
