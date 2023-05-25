@@ -83,7 +83,7 @@ layout = html.Div(id="main", children=[
           Input('interval-component', 'n_intervals'))
 def update_metrics(n):
     metrics_dict = metrics(engine)
-    return f'{metrics_dict["total_power"]} Watts', f'{metrics_dict["avg_power"]} W/s', f'{metrics_dict["avg_resistance"]} N'
+    return f'{metrics_dict["total_power"]} Watts', f'{metrics_dict["avg_power"]} Watts', f'{metrics_dict["avg_resistance"]} N'
 
 
 @callback(Output('gender_graph', 'figure'),
