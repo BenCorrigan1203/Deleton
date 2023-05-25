@@ -29,7 +29,7 @@ To view and access riders information using our restful API, access the API via 
 
 - Delete a ride via ride id
 
-  - With extension
+  - With extension "/ride/id", where id is the replace with the ride id you're trying to delete. NOTE authentication is required to delete the ride.
 
 - Get Rides duration via ride id
 
@@ -53,16 +53,23 @@ To view and access riders information using our restful API, access the API via 
 
 ##
 
-To view realtime dashboard for riders at a glance using the this link [LINK]
+To view realtime dashboard for riders at a glance using the link provided from the loadbalancer
 
-- Current ride
-  [IMAGE]
+#### Current ride
 
+<p align="center">
+<img src="https://i.ibb.co/PjrY6Hz/Screenshot-2023-05-24-at-16-46-21.png" alt="Tableau example" width="738">
+</p>
   - From entering rider id, you will be able to see you details, including current heart rate, cumulative power and, average power and resistance.
+  
+##
+##
 
-- Recent rides
-  [IMAGE]
+#### Recent rides
 
+<p align="center">
+<img src="https://i.ibb.co/yV2J8sM/Screenshot-2023-05-24-at-16-46-39.png" alt="Tableau example" width="738">
+</p>
   - You will be able to see two graphs which show all the rides in a bar chart, where one is split via age bracket and other is split via gender.
 
 ### Tableau
