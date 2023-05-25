@@ -9,9 +9,53 @@ li {
 label {
     background-color: antiquewhite;
     padding: 0.2rem;
-    border: 0.1rem solid antiquewhite;
+    border: 0.1rem solid #faead6;
     color: #333333;
+    transition: box-shadow .3s;
+
 }
+
+a {
+  background-image: linear-gradient(
+    to right,
+    #7FC37E,
+    #7FC37E 50%,
+    #333333 50%
+  );
+  background-size: 200% 100%;
+  background-position: -100%;
+  display: inline-block;
+  padding: 5px 0;
+  position: relative;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.3s ease-in-out;
+}
+
+a:before {
+  content: '';
+  background: #7FC37E;
+  display: block;
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  transition: all 0.3s ease-in-out;
+}
+
+a:hover {
+ background-position: 0;
+}
+a:hover::before {
+  width:100%;
+}
+a:visited { text-decoration: none; }
+a:active { text-decoration: none; }
+/* a:hover {
+  text-decoration: none;
+  color: #333333;
+} */
 .endpoints {
     font-size:x-large;
     color: antiquewhite;
@@ -43,21 +87,21 @@ label {
         <div>
             <li>Get a ride with a specific ID</li>
         </div>
-        <label>/ride/:id</label> 
+        <label><a href="http://c7-deloton-api-lb-798045880.eu-west-2.elb.amazonaws.com/ride/1/" target="_blank">/ride/:id</a></label> 
     </div>
 <br />
     <div class="info">
         <div>    
             <li>Get rider information </li>
         </div>
-        <label>/rider/:user_id</label>
+        <label><a href="http://c7-deloton-api-lb-798045880.eu-west-2.elb.amazonaws.com/rider/4816/" target="_blank">/rider/:user_id/</a></label>
     </div>
 <br />
     <div class="info">
         <div>
             <li>Get all rides for a rider with a specific ID</li>
         </div>
-        <label>/rider/:user_id/rides</label>
+        <label><a href="http://c7-deloton-api-lb-798045880.eu-west-2.elb.amazonaws.com/rider/4816/rides" target="_blank">/rider/:user_id/rides</a></label>
     </div>
 <br />
     <div class="info">
@@ -71,35 +115,35 @@ label {
         <div>
             <li>Get all of the rides in the current day</li>
         </div>
-        <label>/daily</label>
+        <label><a href="http://c7-deloton-api-lb-798045880.eu-west-2.elb.amazonaws.com/daily/" target="_blank">/daily</a></label>
     </div>
 <br />
     <div class="info">
         <div>
             <li>Get all rides for a specific date</li>
         </div>
-        <label>/daily?date=dd-mm-yyyy</label>
+        <label><a href="http://c7-deloton-api-lb-798045880.eu-west-2.elb.amazonaws.com/daily/?date=24-05-2023" target="_blank">/daily?date=dd-mm-yyyy</a></label>
     </div>
 <br />
     <div class="info">
         <div>
             <li>Get a leaderboard of most rides by riders</li>
         </div>
-        <label>/leaderboard</label>
+        <label><a href="http://c7-deloton-api-lb-798045880.eu-west-2.elb.amazonaws.com/leaderboard/" target="_blank">/leaderboard</a></label>
     </div>
 <br />
 <div class="info">
     <div>
         <li>Get a rides in a specified city</li>
     </div>
-    <label>/city</label>
+    <label><a href="http://c7-deloton-api-lb-798045880.eu-west-2.elb.amazonaws.com/city/" target="_blank">/city</a></label>
 </div>
 <br />
 <div class="info">
     <div>
         <li>Get all rides for a rider with a specific ID</li>
     </div>
-    <label>/rider/rider_id/duration</label>
+    <label><a href="http://c7-deloton-api-lb-798045880.eu-west-2.elb.amazonaws.com/rider/4816/duration/" target="_blank">/rider/rider_id/duration</a></label>
 </div>
     
 </div>
