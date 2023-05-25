@@ -1,5 +1,5 @@
-"""Utility file for the ingestion script containing most of the
-message processing functions"""
+"""Utility file for the kafka stream ingestion file to pull from,
+mainly composed of functions to processed/clean messages"""
 import re
 import math
 import json

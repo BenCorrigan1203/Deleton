@@ -1,4 +1,5 @@
 """Main script for the kafka ingestion part of the Deloton case study"""
+
 import os
 
 from confluent_kafka import Consumer
