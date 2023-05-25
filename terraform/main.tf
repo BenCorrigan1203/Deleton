@@ -40,8 +40,11 @@ resource "aws_lambda_function" "c7-deloton-lambda-compress" {
 
   environment {
     variables = {
+      ACCESS_KEY  = "${var.ACCESS_KEY}"
+      SECRET_KEY  = "${var.SECRET_KEY}"
       DB_USER     = "${var.DB_USER}"
       DB_PASSWORD = "${var.DB_PASSWORD}"
+      DB_NAME     = "deloton"
       DB_HOST     = aws_db_instance.deloton-rds.address
       DB_PORT     = aws_db_instance.deloton-rds.port
 
