@@ -63,10 +63,10 @@ def get_gender_rider_past_day(engine_connection: engine) -> go.Figure:
                JOIN rider on ride_info.rider_id = rider.rider_id 
                WHERE ride_info.end_time >= now() - INTERVAL '24 hours'"""
     riders_day_gender_df = pd.read_sql(query, conn)
-    gender_count = riders_day_gender_df.\
-        groupby('gender')['start_time'].count().reset_index(name='count')
-    gender_fig = px.bar(gender_count, x = 'gender', y = 'count'\
-                        , title="Gender split between riders in the last 24 hours")
+    gender_count = riders_day_gender_df.groupby('gender')['start_time'].count().reset_index(name='count')
+    gender_fig = px.bar(gender_count, x = 'gender', y = 'count', title="Gender split between riders in the last 24 hours")
+    colours = ['#333333', '#7FC37E']
+    gender_fig.data[0].marker.color = [colours[i % len(colours)] for i in range(len(gender_fig.data[0].y))]
     gender_fig.update_layout(
     xaxis_title='Gender',
     yaxis_title='Count',
@@ -97,8 +97,9 @@ def get_age_rider_past_day(engine_connection: engine) -> go.Figure:
          .dt.days.astype(float)) * 0.00273973 #converts to normal number
     riders_day_age_df['age'] = riders_day_age_df['age'].apply(np.floor)
     total_riders_age = group_age_data(riders_day_age_df)
-    age_fig = px.bar(total_riders_age, x = 'age', y = 'count'\
-                     ,title="Age group split between riders in the last 24 hours")
+
+    age_fig = px.bar(total_riders_age, x = 'age', y = 'count', title="Age group split between riders in the last 24 hours",
+color = 'gender', color_discrete_sequence = ['#333333', '#7FC37E'])
     age_fig.update_layout(
     xaxis_title='Age',
     yaxis_title='Count',
@@ -117,10 +118,8 @@ def group_age_data(riders_day_gender_df) -> pd.DataFrame:
     """Creates bings for age group brackets"""
     bins = [10, 20, 30, 40, 50, 60, 70, 105]
     labels = ['10-20', '21-30', '31-40', '41-50', '51-60', '61-70', '71+']
-    age_groups = pd.cut(riders_day_gender_df['age']\
-                        , bins=bins, labels=labels, right=True)
-    age_group_count = riders_day_gender_df.groupby([age_groups])\
-                    ['start_time'].count().reset_index(name='count')
+    age_groups = pd.cut(riders_day_gender_df['age'], bins=bins, labels=labels, right=True)
+    age_group_count = riders_day_gender_df.groupby([age_groups, 'gender'])['start_time'].count().reset_index(name='count')
     return age_group_count
 
 
@@ -133,9 +132,8 @@ def get_avg_reading_riders_past_day(engine_connection: engine) -> Tuple[go.Figur
                JOIN power_w on ride_info.power_id = power_w.power_id
                WHERE ride_info.end_time >= now() - INTERVAL '24 hours'"""
     riders_day_reading_df = pd.read_sql(query, conn)
-    heart_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_heart_rate"\
-                           ,color="avg_heart_rate",\
-                            title="Average heart rate per user in the past day")
+    heart_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_heart_rate", color="avg_heart_rate", title="Average heart rate per user in the past day",
+                           color_continuous_scale='algae')
     heart_fig.update_layout(
     xaxis_title ="Time",
     yaxis_title ="Heart rate",
@@ -145,8 +143,9 @@ def get_avg_reading_riders_past_day(engine_connection: engine) -> Tuple[go.Figur
          'font': {'size': 20, 'color': 'black'}
         }
     )
-    power_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_power"\
-                           ,color="avg_power", title="Average power per user in the past day")
+
+    power_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_power", color="avg_power", title="Average power per user in the past day",
+                           color_continuous_scale='algae')
     power_fig.update_layout(
     xaxis_title ="Time",
     yaxis_title ="Power",
@@ -161,14 +160,16 @@ def get_avg_reading_riders_past_day(engine_connection: engine) -> Tuple[go.Figur
     return heart_fig, power_fig
 
 
-def generate_source_html(figures: list, html_layout: str\
-                         , html_style: str, title_message: str) -> str:
-    """converts image to html"""
-    template = ('<div class="plotly-graph-div""><img src="data:image/png;base64,{image}"></div>')
+def generate_source_html(figures: list, html_layout: str, html_style: str, title_message: str) -> str:
+    """Generates the html for the pdf as a string, formatting the images into
+    html format along the way"""
+    template = ('<img src="data:image/png;base64,{image}">')
     images = [base64.b64encode(figure.to_image()).decode('utf-8') for figure in figures]
-    images_html = ",\n".join([template.format(image=image) for image in images])
-    return html_layout.format(style=html_style, print_line=title_message\
-                              ,images_html=images_html, file_path=DIR_FILE_PATH)
+    gender_graph, age_graph, hrt_graph, power_graph = [template.format(image=image) for image in images]
+    return html_layout.format(style=html_style, print_line=title_message,
+                              gender_graph=gender_graph, age_graph=age_graph,
+                              hrt_graph=hrt_graph, power_graph=power_graph,
+                              file_path=DIR_FILE_PATH)
 
 
 def convert_html_to_pdf(source_html: str, output_filename: str) -> str:
@@ -228,7 +229,10 @@ def handler(event, context):
     age_fig = get_age_rider_past_day(db_engine)
     heart_fig, power_fig = get_avg_reading_riders_past_day(db_engine)
 
+
     report_html = generate_source_html([gender_fig, age_fig, heart_fig, power_fig]\
                                        ,REPORT_HTML, HTML_STYLE, print_line)
     convert_html_to_pdf(report_html, PDF_FILE_PATH)
+    print("sending email")
     email_send()
+

@@ -1,4 +1,5 @@
-"""Main file for the kafka ingestion for the Deloton case study"""
+"""Main script for the kafka ingestion part of the Deloton case study"""
+
 import os
 
 from confluent_kafka import Consumer
@@ -149,8 +150,8 @@ def process_message(conn: connection, message: str, ride_id: int,
 
     elif '[INFO]' in message and 'Telemetry' in message and ride_id != -1:
         telemetry_info = process_telemetry_message(message)
-        alert_sent = assess_heart_rate(telemetry_info['hrt'], max_heart_rate,
-                                       current_ride_alert_status)
+        alert_sent = assess_heart_rate(telemetry_info['hrt'],
+                                       max_heart_rate, current_ride_alert_status)
         try:
             if last_log == 'ride':
                 log_to_input = [
