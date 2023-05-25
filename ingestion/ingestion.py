@@ -150,13 +150,10 @@ def process_message(conn: connection, message: str, ride_id: int,
 
     elif '[INFO]' in message and 'Telemetry' in message and ride_id != -1:
         telemetry_info = process_telemetry_message(message)
-<<<<<<< HEAD
+
         alert_sent = assess_heart_rate(telemetry_info['hrt'], max_heart_rate,
                                        current_ride_alert_status)
-=======
-        alert_sent = assess_heart_rate(telemetry_info['hrt'],
-                                       max_heart_rate, current_ride_alert_status)
->>>>>>> a20e7742dcca73e228b6b6c020bfbfb4fadcfbd0
+
         try:
             if last_log == 'ride':
                 log_to_input = [

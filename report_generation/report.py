@@ -161,6 +161,8 @@ def get_avg_reading_riders_past_day(engine_connection: engine) -> Tuple[go.Figur
 
 
 def generate_source_html(figures: list, html_layout: str, html_style: str, title_message: str) -> str:
+    """Generates the html for the pdf as a string, formatting the images into
+    html format along the way"""
     template = ('<img src="data:image/png;base64,{image}">')
     images = [base64.b64encode(figure.to_image()).decode('utf-8') for figure in figures]
     gender_graph, age_graph, hrt_graph, power_graph = [template.format(image=image) for image in images]
