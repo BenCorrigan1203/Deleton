@@ -61,7 +61,7 @@ To view realtime dashboard for riders at a glance using the link provided from t
 #### Current ride
 
 <p align="center">
-<img src="https://i.ibb.co/PjrY6Hz/Screenshot-2023-05-24-at-16-46-21.png" alt="Tableau example" width="738">
+<img src="https://i.ibb.co/ZBrw5RF/Screenshot-2023-05-25-at-13-58-09.png" alt="Tableau example" width="738">
 </p>
   - From entering rider id, you will be able to see you details, including current heart rate, cumulative power and, average power and resistance.
   
@@ -71,7 +71,7 @@ To view realtime dashboard for riders at a glance using the link provided from t
 #### Recent rides
 
 <p align="center">
-<img src="https://i.ibb.co/yV2J8sM/Screenshot-2023-05-24-at-16-46-39.png" alt="Tableau example" width="738">
+<img src="https://i.ibb.co/M1C0n5r/Screenshot-2023-05-25-at-13-59-55.png" alt="Tableau example" width="738">
 </p>
   - You will be able to see two graphs which show all the rides in a bar chart, where one is split via age bracket and other is split via gender.
 
@@ -80,7 +80,7 @@ To view realtime dashboard for riders at a glance using the link provided from t
 To view the live tableau dashboard, please login to our tableau server
 
 <p align="center">
-  <img src="https://imgtr.ee/images/2023/05/22/woHwM.png" alt="Tableau example" width="738">
+  <img src="https://i.ibb.co/KNWBRXm/tableau-dashboard.png" alt="Tableau example" width="738">
 </p>
 
 - Above image shows leaderboard of riders which can be filtered on longest individual ride, highest power output and longest cumulative ride time by a rider.
@@ -92,7 +92,7 @@ To view the live tableau dashboard, please login to our tableau server
 ### Daily report
 
 <p align="center">
-  <img src="https://imgtr.ee/images/2023/05/22/wojKq.png" alt="Daily report example" width="738">
+  <img src="https://i.ibb.co/jVsSR1Y/Screenshot-2023-05-25-at-14-02-22.png" alt="Daily report example" width="738">
 </p>
 
 - Example of the daily report given to C-suits each day via email, where we see total number of riders and 4 graphs. Graph 1 showing the riders of the past day split by gender, graph 2 showing riders of the past day split by age brackets, graph 3 showing average heart rates of riders during the day, and the last graph showing average power of riders during the day.
