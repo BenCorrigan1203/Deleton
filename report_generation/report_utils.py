@@ -17,7 +17,7 @@ padding: 2 0 0 0
 p {
     text-align: Center;
     color : #333333;
-    font-size: 4;
+    font-size: 6;
     }
 .container {
     grid-template-columns: repeat(2, 1fr); 
@@ -47,8 +47,17 @@ REPORT_HTML = '''
         <div>
         <p class="intro"> {print_line}</p>
         </div>
-        <div class="container" >
-        {images_html}
+        <div class="container">
+        <table>
+        <tr>
+            <td>{gender_graph}</td>
+            <td>{age_graph}</td>
+        </tr>
+        <tr>
+            <td>{hrt_graph}</td>
+            <td>{power_graph}</td>
+        </tr>
+        </table>
         </div>
         <img src="{file_path}/deloton.png">
     </body>
