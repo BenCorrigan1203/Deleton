@@ -84,7 +84,7 @@ def get_gender_rider_past_day(engine_connection: engine) -> go.Figure:
 def get_age_rider_past_day(engine_connection: engine) -> go.Figure:
     """Use an sqlalchemy engine to connect to an rds and read data from rds."""
     conn = engine_connection.connect()
-    query = """SELECT ride_info.start_time, rider.date_of_birth FROM ride_info
+    query = """SELECT ride_info.start_time, rider.date_of_birth, gender FROM ride_info
                JOIN rider on ride_info.rider_id = rider.rider_id 
                WHERE ride_info.end_time >= now() - INTERVAL '24 hours'"""
     riders_day_age_df = pd.read_sql(query, conn)
@@ -133,7 +133,7 @@ def get_avg_reading_riders_past_day(engine_connection: engine) -> Tuple[go.Figur
                WHERE ride_info.end_time >= now() - INTERVAL '24 hours'"""
     riders_day_reading_df = pd.read_sql(query, conn)
     heart_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_heart_rate", color="avg_heart_rate", title="Average heart rate per user in the past day",
-                           color_continuous_scale='algae')
+                           color_continuous_scale='algae', labels={"avg_heart_rate": "AVG Heart Rate"})
     heart_fig.update_layout(
     xaxis_title ="Time",
     yaxis_title ="Heart rate",
@@ -141,11 +141,12 @@ def get_avg_reading_riders_past_day(engine_connection: engine) -> Tuple[go.Figur
          'x':0.5,
          'xanchor': "center",
          'font': {'size': 20, 'color': 'black'}
-        }
+        },
+    legend_title="AVG Heart Rate"
     )
 
     power_fig = px.scatter(riders_day_reading_df, x="start_time", y="avg_power", color="avg_power", title="Average power per user in the past day",
-                           color_continuous_scale='algae')
+                           color_continuous_scale='algae', labels={"avg_power": "AVG Power"})
     power_fig.update_layout(
     xaxis_title ="Time",
     yaxis_title ="Power",
@@ -153,7 +154,8 @@ def get_avg_reading_riders_past_day(engine_connection: engine) -> Tuple[go.Figur
          'x':0.5,
          'xanchor': "center",
          'font': {'size': 20, 'color': 'black'}
-        }
+        },
+        legend_title="AVG Power Output"
     )
     conn.close()
     engine_connection.dispose()
@@ -235,4 +237,3 @@ def handler(event, context):
     convert_html_to_pdf(report_html, PDF_FILE_PATH)
     print("sending email")
     email_send()
-
