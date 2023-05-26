@@ -146,7 +146,7 @@ def get_city_rides() -> dict:
     if city is not None:
         try:
             if request.method == "GET":
-                city_rides = helper_functions.get_all_riders_rides(city)
+                city_rides = helper_functions.get_total_riders_for_city(city)
                 data = {f"Rides in {city}": city_rides, "success": True}
                 return data, 200
         except ValueError:
