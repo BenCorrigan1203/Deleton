@@ -59,13 +59,16 @@ def process_rider_name(fullname: str):
         return {"first_name": split_name[0], 'last_name': split_name[1]}
     if len(split_name) == 3:
         return {"first_name": split_name[1], 'last_name': split_name[2]}
+    else:
+        return "Invalid Name format"
 
 
-def get_rider_age(rider_dob: str, ride_start_time: str) -> int:
+def get_rider_age(rider_dob: int, ride_start_time: str) -> int:
     """Finds the age of the rider at the start of their ride"""
     start_date = datetime.strptime(ride_start_time, "%Y-%m-%d %H:%M:%S.%f").date()
     dob_date = datetime.fromtimestamp(rider_dob/1000).date()
     return math.floor((start_date - dob_date).days/365.25)
+
 
 def process_rider_info(decoded_system_message: dict) -> dict:
     """Processes the message received from the kafka stream if the message
