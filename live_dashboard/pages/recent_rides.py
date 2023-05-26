@@ -1,3 +1,5 @@
+"""Page on the Dash app displaying metrics and graphs for rides in the past 12 hours"""
+
 from dash import html, callback, Output, Input, dcc
 import dash
 from dash_utils import get_db_connection, age_graph, gender_graph, metrics

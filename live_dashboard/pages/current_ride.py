@@ -1,3 +1,5 @@
+"""Homepage for the Dash app as well as a page displaying current rider and associated metrics"""
+
 from dash import html, callback, Output, Input, dcc
 import dash
 from dash_utils import get_db_connection, get_current_rider_data, heart_rate_status_colour, heart_rate_graph, resistance_graph, power_graph

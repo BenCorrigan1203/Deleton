@@ -1,11 +1,11 @@
+"""Functions for getting data from a PostgreSQL database and plotting graphs for pages on the dash app"""
+
 import os
 import math
-from datetime import datetime, date
+from datetime import date
 
 import pandas as pd
-import psycopg2
 from sqlalchemy import URL, create_engine, engine
-from dotenv import load_dotenv
 import plotly.express as px
 from plotly.graph_objects import Figure
 import numpy as np

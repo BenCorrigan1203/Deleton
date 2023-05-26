@@ -1,3 +1,5 @@
+"""Main script for running the Dash app for the Deloton Live Dashboard"""
+
 import dash
 from dash import Dash, html, dcc
 import dash_bootstrap_components as dbc
