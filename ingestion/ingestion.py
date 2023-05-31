@@ -90,10 +90,15 @@ def add_ride_data_to_database(conn: connection, ride_data: dict) -> int:
 
 def add_metadata_to_database(conn: connection, metadata: list[list]) -> None:
     """Adds the ride metadata to the database. Given there are so many requests this is chunked
-    into 10 entries at a time"""
+    into 10 entries at a time"""  
     try:
+        if metadata[2] > 400:
+            raise ValueError("Error in Power value: Value not humanly possible, \
+skipping to next data point.")
         with conn.cursor() as cur:
             cur.execute(METADATA_SQL, metadata)
+    except ValueError as err:
+        print(err)
     except Exception as err:
         print(err, "Could not add metadata to the database.")
     finally:
@@ -118,7 +123,7 @@ def assess_heart_rate(current_heart_rate: int, max_heart_rate: int,
     if current_heart_rate > max_heart_rate - 10 and alert_sent_status is False:
         message = {"Subject": {"Data": "Heart Rate Alert"},
                     "Body": {"Text": {"Data": f"This is an automated alert from your \
-Deleton tracker. At your current \
+Deloton tracker. At your current \
 age, the maximum safe heart rate is {max_heart_rate} bpm. You have reached \
 {current_heart_rate}. Please exercise with caution and remain safe."}}}
         ses.send_email(Source="trainee.mohammed.simjee@sigmalabs.co.uk",
