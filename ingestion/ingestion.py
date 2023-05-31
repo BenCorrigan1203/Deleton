@@ -54,6 +54,8 @@ def add_address_to_database(conn: connection, rider_address: dict) -> int:
 def add_rider_data_to_database(conn: connection, rider_data: dict, address_id: int) -> None:
     """Adds the data on the rider to the database if it doesn't already exist"""
     try:
+        if rider_data['gender'] != ['male', 'female']:
+            rider_data['gender'] = 'Unknown'
         with conn.cursor() as cur:
             cur.execute(RIDER_SQL, [rider_data['rider_id'],
                                     rider_data['first_name'],
@@ -88,7 +90,7 @@ def add_ride_data_to_database(conn: connection, ride_data: dict) -> int:
 
 
 
-def add_metadata_to_database(conn: connection, metadata: list[list]) -> None:
+def add_metadata_to_database(conn: connection, metadata: list) -> None:
     """Adds the ride metadata to the database. Given there are so many requests this is chunked
     into 10 entries at a time"""  
     try:

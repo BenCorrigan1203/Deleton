@@ -170,7 +170,7 @@ def group_age_data(recent_rides_df: pd.DataFrame)-> pd.DataFrame:
 def gender_graph(engine: engine) -> Figure:
 
     data = execute_sql_query(RECENT_RIDES_SQL, engine)
-    
+    data = data[(data['gender'] == 'male') | (data['gender'] == 'female')]
     gender_grouped_rides = data.groupby(data["gender"]).count()
 
     graph = px.bar(x=gender_grouped_rides.index, y=gender_grouped_rides["ride_id"],
@@ -194,6 +194,7 @@ def gender_graph(engine: engine) -> Figure:
 def age_graph(engine: engine) -> Figure:
 
     data = execute_sql_query(RECENT_RIDES_SQL, engine)
+    data = data[(data['gender'] == 'male') | (data['gender'] == 'female')]
 
     data['date_of_birth'] = pd.to_datetime(data['date_of_birth'])
 
