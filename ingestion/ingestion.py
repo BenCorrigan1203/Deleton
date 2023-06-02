@@ -54,7 +54,7 @@ def add_address_to_database(conn: connection, rider_address: dict) -> int:
 def add_rider_data_to_database(conn: connection, rider_data: dict, address_id: int) -> None:
     """Adds the data on the rider to the database if it doesn't already exist"""
     try:
-        if rider_data['gender'] != ['male', 'female']:
+        if rider_data['gender'] != 'male' and rider_data['gender'] != 'female':
             rider_data['gender'] = 'Unknown'
         with conn.cursor() as cur:
             cur.execute(RIDER_SQL, [rider_data['rider_id'],
